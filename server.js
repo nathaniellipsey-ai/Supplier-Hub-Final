@@ -367,10 +367,9 @@ app.get('/api/chatbot/suggestions', (req, res) => {
 
 // Serve frontend dashboard
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+  res.sendFile(path.join(__dirname, 'dashboard_with_api.html'));
 });
 
-// Serve legacy HTML files
 // Serve static files
 app.use(express.static(__dirname, {
   maxAge: NODE_ENV === 'production' ? '1h' : 0, // Cache for 1 hour in production
