@@ -2977,15 +2977,15 @@ function updateStats() {
                             <button class="note-btn" onclick="openNoteModal(${supplier.id})" title="Add/view notes">
                                 NOTE
                             </button>
-                            <span class="ai-score">AI: ${supplier.aiScore}</span>
+                            <span class="ai-score">Stock: ${supplier.stockLevel}</span>
                         </div>
                     </div>
                     <div class="supplier-meta">
-                        <span class="meta-item">${supplier.location}, ${supplier.region}</span>
-                        <span class="meta-item">Rating: ${supplier.rating}/5.0</span>
-                        <span class="meta-item">${supplier.size}</span>
-                        <span class="meta-item">${supplier.priceRange}</span>
-                        <span class="meta-item">${supplier.yearsInBusiness} years</span>
+                        <span class="meta-item">${supplier.location}</span>
+                        <span class="meta-item">Rating: ${supplier.rating}/5.0 (${supplier.reviews} reviews)</span>
+                        <span class="meta-item">Stock: ${supplier.inStock ? 'Available' : 'Out of Stock'}</span>
+                        <span class="meta-item">Lead time: ${supplier.leadTime}</span>
+                        <span class="meta-item">Response: ${supplier.responseTime}</span>
                     </div>
                     <div class="supplier-products">
                         <strong>Products:</strong>
