@@ -52,8 +52,23 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Generate supplier data (seeded for consistency)
-let suppliersCache = generateSupplierData();
+let suppliersCache = [];
 let lastUpdateTime = Date.now();
+
+try {
+  console.log('🔄 Generating supplier data...');
+  suppliersCache = generateSupplierData(150);
+  console.log(`✅ Generated ${suppliersCache.length} suppliers`);
+  if (suppliersCache.length === 0) {
+    console.error('❌ ERROR: Data generator returned empty array!');
+    throw new Error('Data generator failed to create suppliers');
+  }
+} catch (error) {
+  console.error('❌ ERROR generating supplier data:', error);
+  console.error('Stack:', error.stack);
+  // Set default empty array so server doesn't crash
+  suppliersCache = [];
+}
 
 // Chat history store (optional - for multi-turn conversations)
 const chatHistoryStore = new Map();
@@ -103,6 +118,18 @@ app.get('/health', (req, res) => {
 
 // Get all suppliers
 app.get('/api/suppliers', (req, res) => {
+  console.log(`📊 API call: GET /api/suppliers - returning ${suppliersCache.length} suppliers`);
+  
+  if (!suppliersCache || suppliersCache.length === 0) {
+    console.error('❌ ERROR: suppliersCache is empty!');
+    return res.json({
+      success: false,
+      error: 'No supplier data available',
+      data: [],
+      count: 0
+    });
+  }
+  
   res.json({
     success: true,
     data: suppliersCache,

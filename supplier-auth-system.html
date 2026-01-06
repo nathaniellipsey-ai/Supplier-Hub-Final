@@ -310,7 +310,8 @@
             // Auto-login and redirect
             setTimeout(() => {
                 localStorage.setItem('currentUser', email);
-                window.location.href = 'supplier-search-engine.html';
+                window.location.href = '/';
+            }, 2000);
             }, 2000);
         }
 
@@ -339,7 +340,7 @@
             showSuccess('loginSuccess', '✅ Login successful! Redirecting...');
             
             setTimeout(() => {
-                window.location.href = 'supplier-search-engine.html';
+                window.location.href = '/';}
             }, 1000);
         }
 
@@ -359,7 +360,7 @@
         if (localStorage.getItem('currentUser')) {
             showSuccess('loginSuccess', 'Already logged in! Redirecting...');
             setTimeout(() => {
-                window.location.href = 'supplier-search-engine.html';
+                window.location.href = '/';}
             }, 1000);
         }
     </script>

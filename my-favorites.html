@@ -204,7 +204,7 @@
     <div class="header">
         <div class="header-content">
             <h1>MY FAVORITES</h1>
-            <a href="supplier-search-engine.html" class="back-btn">BACK TO SEARCH</a>
+            <a href="/" class="back-btn">BACK TO SEARCH</a>
         </div>
     </div>
 
@@ -317,7 +317,7 @@
                     <div class="empty-state">
                         <h2>No Favorites Found</h2>
                         <p>Start adding suppliers to your favorites from the main search page!</p>
-                        <a href="supplier-search-engine.html" class="back-btn" style="margin-top: 20px;">GO TO SEARCH</a>
+                        <a href="/" class="back-btn" style="margin-top: 20px;">GO TO SEARCH</a>
                     </div>
                 `;
                 return;
@@ -337,7 +337,7 @@
                         <div class="meta-item"><strong>Years:</strong> ${supplier.yearsInBusiness}</div>
                         <div class="meta-item"><strong>Verified:</strong> ${supplier.walmartVerified ? 'Yes' : 'No'}</div>
                     </div>
-                    <button class="view-btn" onclick="window.location.href='supplier-search-engine.html'">VIEW IN SEARCH</button>
+                    <button class="view-btn" onclick="window.location.href='/'">VIEW IN SEARCH</button>
                 </div>
             `).join('');
         }
