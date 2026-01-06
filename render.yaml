@@ -1,12 +1,11 @@
 services:
   - type: web
     name: supplier-portal
-    runtime: node
-    node:
-      version: 18.19.0
+    runtime: python
+    pythonVersion: 3.11.7
     plan: free
-    buildCommand: bash render-build.sh
-    startCommand: node server.js
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
     envVars:
       - key: NODE_ENV
         value: production
@@ -14,12 +13,8 @@ services:
         value: 3000
       - key: HOST
         value: 0.0.0.0
-      - key: CORS_ORIGIN
-        value: "*"
-      - key: WS_ENABLED
-        value: "true"
-      - key: WS_UPDATE_INTERVAL
-        value: "10000"
+      - key: PYTHONUNBUFFERED
+        value: "1"
     healthCheckPath: /health
     healthCheckInterval: 30
     healthCheckTimeout: 10
