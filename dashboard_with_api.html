@@ -2312,8 +2312,8 @@ function updateStats() {
         // All supplier data is now fetched from /api/suppliers endpoint
 
         // ✅ LOAD SUPPLIERS FROM SERVER ONLY (no local generation)
-        let allSuppliers = [];
-        let filteredSuppliers = [];
+        // NOTE: allSuppliers already declared at line 1641, just reassign
+        filteredSuppliers = [];
         
         // Initialize on page load
         async function initializeFromServer() {
@@ -2341,6 +2341,13 @@ function updateStats() {
         } else {
             initializeFromServer();
         }
+        
+        // Also call on window load to be extra sure
+        window.addEventListener('load', function() {
+            if (allSuppliers.length === 0) {
+                initializeFromServer();
+            }
+        });
         let currentPage = 1;
         const itemsPerPage = 20;
 
