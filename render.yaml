@@ -2,6 +2,8 @@ services:
   - type: web
     name: supplier-portal
     runtime: node
+    node:
+      version: 18
     plan: free
     buildCommand: npm install
     startCommand: node server.js
@@ -15,4 +17,5 @@ services:
       - key: FRONTEND_PORT
         value: 3002
     healthCheckPath: /health
-    healthCheckTimeout: 30
+    healthCheckInterval: 30
+    maxShutdownDelay: 30

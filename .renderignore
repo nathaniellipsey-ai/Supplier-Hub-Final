@@ -1,0 +1,19 @@
+# Ignore Python files to prevent Render from detecting Python
+*.py
+__pycache__/
+*.pyc
+requirements.txt
+setup.py
+pyproject.toml
+Poetry.lock
+Pipfile
+
+# Ignore documentation and reference files
+*.md
+*.txt
+.env.example
+
+# Ignore node modules locally if present
+node_modules/
+.npm/
+.yarn/
