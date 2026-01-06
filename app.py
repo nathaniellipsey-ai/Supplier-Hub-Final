@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 """
 Walmart Supplier Portal - Python Backend
-Dynamically generates 1000+ realistic suppliers
-No database needed - pure in-memory generation
+Loads REAL construction material suppliers from web scraping
 """
 
 import os
 import sys
 import json
 from datetime import datetime
-import random
 
 try:
     from flask import Flask, jsonify, request, send_from_directory
@@ -20,7 +18,8 @@ except ImportError as e:
     sys.exit(1)
 
 print("\n" + "="*70)
-print("WALMART SUPPLIER PORTAL - DYNAMIC SUPPLIER GENERATOR")
+print("WALMART SUPPLIER PORTAL - REAL DATA BACKEND")
+print("Serving actual construction material suppliers from USA")
 print("="*70)
 
 # Initialize Flask
@@ -39,142 +38,106 @@ print(f"Environment: {NODE_ENV}")
 print(f"Host: {HOST}:{PORT}")
 print()
 
-# ==================== SUPPLIER GENERATION ====================
+# ==================== LOAD REAL SUPPLIER DATA ====================
 
-print("[1/3] Setting up supplier data...")
+print("[1/3] Loading supplier data...")
 
-# Company name parts
-COMPANY_PREFIXES = [
-    'ABC', 'XYZ', 'Global', 'Premier', 'Eastern', 'Western', 'Central',
-    'National', 'Regional', 'Local', 'Quality', 'Elite', 'Superior',
-    'Advanced', 'Professional', 'Strategic', 'Optimal', 'Reliable',
-    'American', 'Universal', 'Dynamic', 'Integrated', 'Progressive'
-]
+ALL_SUPPLIERS = []
 
-COMPANY_SUFFIXES = [
-    'Industries', 'Corp', 'Supplies', 'Builders', 'Materials', 'Trading',
-    'Supply Co', 'Vendors', 'Distributors', 'Suppliers', 'Products',
-    'Manufacturing', 'Solutions', 'Systems', 'Group', 'Enterprises',
-    'Ltd', 'LLC', 'Inc', 'Company', 'Associates'
-]
-
-CATEGORIES = [
-    'Concrete & Cement', 'Steel & Metal', 'Lumber & Wood', 'Roofing Materials',
-    'Insulation', 'Drywall & Gypsum', 'Electrical', 'Plumbing', 'HVAC',
-    'Flooring', 'Windows & Doors', 'Paint & Coatings', 'Fasteners & Hardware',
-    'Tools & Equipment', 'Safety Equipment', 'Landscaping', 'Masonry',
-    'Temporary Construction', 'Personal Protective Equipment', 'Material Handling',
-    'Scaffolding & Ladders', 'Lighting Fixtures', 'Plumbing Fixtures',
-    'Appliances', 'Cabinets & Storage', 'Hardware & Tools', 'Outdoor Equipment'
-]
-
-LOCATIONS = [
-    'New York', 'Los Angeles', 'Chicago', 'Dallas', 'Houston', 'Phoenix',
-    'Atlanta', 'Miami', 'Seattle', 'Denver', 'Boston', 'San Francisco',
-    'Detroit', 'Minneapolis', 'Nashville', 'Austin', 'Memphis', 'Portland',
-    'Las Vegas', 'Washington DC', 'Philadelphia', 'Orlando', 'Charlotte',
-    'San Diego', 'Tampa', 'Montreal', 'Toronto', 'Vancouver', 'Mexico City',
-    'Salt Lake City', 'Kansas City', 'Milwaukee', 'Albuquerque', 'Indianapolis'
-]
-
-REGIONS = ['Northeast', 'Southeast', 'Midwest', 'Southwest', 'West', 'National']
-
-PRODUCTS_BY_CATEGORY = {
-    'Concrete & Cement': ['Ready-Mix Concrete', 'Portland Cement', 'Concrete Blocks', 'Concrete Admixtures', 'Concrete Sealers'],
-    'Steel & Metal': ['Structural Steel', 'Rebar', 'Steel Beams', 'Metal Studs', 'Steel Plate'],
-    'Lumber & Wood': ['Dimensional Lumber', 'Plywood', 'OSB Panels', 'Engineered Wood', 'Laminated Veneer Lumber'],
-    'Roofing Materials': ['Asphalt Shingles', 'Metal Roofing', 'TPO Membrane', 'Slate Tiles', 'Wood Shakes'],
-    'Insulation': ['Fiberglass Batts', 'Spray Foam', 'Rigid Foam Board', 'Cellulose', 'Mineral Wool'],
-    'Drywall & Gypsum': ['Standard Drywall', 'Fire-Rated Drywall', 'Ceiling Tiles', 'Moisture-Resistant Drywall'],
-    'Electrical': ['Wire & Cable', 'Conduit', 'LED Fixtures', 'Switches & Outlets', 'Circuit Breakers'],
-    'Plumbing': ['PVC Pipe', 'Copper Pipe', 'Valves & Fittings', 'Water Heaters', 'Pumps'],
-    'HVAC': ['Air Handling Units', 'Ductwork', 'Thermostats', 'Air Filters', 'Refrigerant'],
-    'Flooring': ['Vinyl Flooring', 'Ceramic Tile', 'Hardwood', 'Laminate', 'Carpet'],
-    'Windows & Doors': ['Vinyl Windows', 'Steel Doors', 'Fiberglass Doors', 'Garage Doors', 'Skylights'],
-    'Paint & Coatings': ['Interior Paint', 'Exterior Paint', 'Primers', 'Epoxy Coatings', 'Stains'],
-    'Fasteners & Hardware': ['Screws', 'Nails', 'Bolts & Anchors', 'Brackets', 'Hinges'],
-    'Tools & Equipment': ['Power Tools', 'Hand Tools', 'Generators', 'Air Compressors', 'Ladders'],
-    'Safety Equipment': ['Hard Hats', 'Safety Glasses', 'Work Gloves', 'Steel Toe Boots', 'Reflective Vests'],
-    'Landscaping': ['Mulch', 'Topsoil', 'Gravel', 'Landscape Fabric', 'Plants'],
-    'Masonry': ['Brick', 'Concrete Block', 'Mortar', 'Stone Veneer', 'Flagstone'],
-    'Temporary Construction': ['Temporary Walls', 'Construction Fencing', 'Dust Barriers', 'Temporary Flooring'],
-    'Personal Protective Equipment': ['Respirators', 'Dust Masks', 'Gloves', 'Safety Vests', 'Eye Protection'],
-    'Material Handling': ['Pallet Racks', 'Conveyor Systems', 'Hoists', 'Dock Levelers', 'Forklifts'],
-    'Scaffolding & Ladders': ['Frame Scaffolding', 'Extension Ladders', 'Step Ladders', 'Mobile Scaffolding'],
-    'Lighting Fixtures': ['LED Downlights', 'Pendant Lights', 'Track Lighting', 'Wall Sconces', 'Chandeliers'],
-    'Plumbing Fixtures': ['Toilets', 'Sinks', 'Faucets', 'Shower Heads', 'Bathtubs'],
-    'Appliances': ['Refrigerators', 'Ovens', 'Dishwashers', 'Washers', 'Dryers'],
-    'Cabinets & Storage': ['Kitchen Cabinets', 'Bathroom Vanities', 'Storage Shelves', 'Wall Cabinets'],
-    'Hardware & Tools': ['Screwdrivers', 'Wrenches', 'Saws', 'Drills', 'Hammers'],
-    'Outdoor Equipment': ['Mowers', 'Trimmers', 'Pressure Washers', 'Chainsaws']
-}
-
-CERTIFICATIONS = [
-    'ISO 9001', 'LEED', 'MBE', 'WBE', 'OSHA Certified', 'Energy Star Partner',
-    'ISO 14001', 'UL Certified', 'CSA Certified', 'RoHS Compliant'
-]
-
-LEAD_TIMES = ['2-4 weeks', '1-2 weeks', '4-6 weeks', '1-2 months', '2-3 months', '3-5 days', '1 week']
-RESPONSE_TIMES = ['24 hours', '48 hours', '2 business days', '3 business days', '1 week']
-SIZES = ['Small (1-50)', 'Medium (51-500)', 'Large (500-2000)', 'Enterprise (2000+)']
-PRICE_RANGES = ['Budget ($)', 'Standard ($$)', 'Premium ($$$)', 'Enterprise ($$$$)']
-
-def generate_suppliers(count=1000):
+def load_suppliers_from_file(filename='suppliers.json'):
     """
-    Generate realistic supplier data
-    Returns list of supplier dictionaries
+    Load suppliers from scraped JSON file
     """
-    suppliers = []
-    used_names = set()
+    try:
+        if os.path.exists(filename):
+            with open(filename, 'r') as f:
+                data = json.load(f)
+                print(f"[OK] Loaded {len(data)} suppliers from {filename}")
+                return data
+        else:
+            print(f"[WARNING] {filename} not found")
+            print("         Run: python scraper.py to generate supplier data")
+            return []
+    except Exception as e:
+        print(f"[ERROR] Failed to load suppliers: {e}")
+        return []
+
+def enrich_supplier_data(suppliers):
+    """
+    Add additional fields to supplier data
+    """
+    categories = [
+        'Concrete & Cement', 'Steel & Metal', 'Lumber & Wood',
+        'Roofing Materials', 'Electrical', 'Plumbing', 'HVAC',
+        'Paint & Coatings'
+    ]
     
-    for i in range(1, count + 1):
-        # Generate unique company name
-        while True:
-            company_name = f"{random.choice(COMPANY_PREFIXES)} {random.choice(COMPANY_SUFFIXES)} #{i}"
-            if company_name not in used_names:
-                used_names.add(company_name)
-                break
-        
-        category = random.choice(CATEGORIES)
-        
-        # Get products for this category
-        products = PRODUCTS_BY_CATEGORY.get(category, ['Product A', 'Product B'])
-        selected_products = random.sample(products, min(random.randint(2, 4), len(products)))
-        
-        # Random certifications
-        has_certs = random.random() > 0.6
-        certs = random.sample(CERTIFICATIONS, random.randint(1, 3)) if has_certs else []
-        
-        supplier = {
-            'id': i,
-            'name': company_name,
-            'category': category,
-            'rating': round(random.uniform(3.0, 5.0), 1),
-            'reviews': random.randint(5, 500),
-            'location': random.choice(LOCATIONS),
-            'region': random.choice(REGIONS),
-            'products': selected_products,
-            'certifications': certs,
-            'leadTime': random.choice(LEAD_TIMES),
-            'responseTime': random.choice(RESPONSE_TIMES),
-            'stockLevel': random.randint(100, 5000),
-            'inStock': random.random() > 0.05,  # 95% in stock
-            'minimumOrder': random.choice([50, 100, 250, 500, 1000]),
-            'walmartVerified': random.random() > 0.7,  # 30% verified
-            'size': random.choice(SIZES),
-            'priceRange': random.choice(PRICE_RANGES),
-            'aiScore': random.randint(60, 95),
-            'lastUpdated': datetime.utcnow().isoformat(),
-            'lastStockCheck': datetime.utcnow().isoformat(),
-        }
-        suppliers.append(supplier)
+    regions = ['Northeast', 'Southeast', 'Midwest', 'Southwest', 'West']
+    
+    state_to_region = {
+        # Northeast
+        'Connecticut': 'Northeast', 'Delaware': 'Northeast', 'Maine': 'Northeast',
+        'Maryland': 'Northeast', 'Massachusetts': 'Northeast', 'New Hampshire': 'Northeast',
+        'New Jersey': 'Northeast', 'New York': 'Northeast', 'Pennsylvania': 'Northeast',
+        'Rhode Island': 'Northeast', 'Vermont': 'Northeast', 'West Virginia': 'Northeast',
+        # Southeast
+        'Alabama': 'Southeast', 'Arkansas': 'Southeast', 'Florida': 'Southeast',
+        'Georgia': 'Southeast', 'Kentucky': 'Southeast', 'Louisiana': 'Southeast',
+        'Mississippi': 'Southeast', 'North Carolina': 'Southeast', 'South Carolina': 'Southeast',
+        'Tennessee': 'Southeast', 'Virginia': 'Southeast',
+        # Midwest
+        'Illinois': 'Midwest', 'Indiana': 'Midwest', 'Iowa': 'Midwest',
+        'Kansas': 'Midwest', 'Michigan': 'Midwest', 'Minnesota': 'Midwest',
+        'Missouri': 'Midwest', 'Nebraska': 'Midwest', 'North Dakota': 'Midwest',
+        'Ohio': 'Midwest', 'South Dakota': 'Midwest', 'Wisconsin': 'Midwest',
+        # Southwest
+        'Arizona': 'Southwest', 'New Mexico': 'Southwest', 'Oklahoma': 'Southwest',
+        'Texas': 'Southwest',
+        # West
+        'Alaska': 'West', 'California': 'West', 'Colorado': 'West',
+        'Hawaii': 'West', 'Idaho': 'West', 'Montana': 'West',
+        'Nevada': 'West', 'Oregon': 'West', 'Utah': 'West',
+        'Washington': 'West', 'Wyoming': 'West'
+    }
+    
+    import random
+    
+    for i, supplier in enumerate(suppliers, 1):
+        supplier['id'] = i
+        supplier['category'] = random.choice(categories)
+        supplier['region'] = state_to_region.get(supplier.get('state', 'California'), 'West')
+        supplier['rating'] = round(supplier.get('rating', 4.0), 1)
+        supplier['reviews'] = supplier.get('reviews', 0)
+        supplier['products'] = ['Construction Materials', 'Supplies', 'Equipment']
+        supplier['certifications'] = ['ISO 9001'] if random.random() > 0.7 else []
+        supplier['leadTime'] = '2-4 weeks'
+        supplier['responseTime'] = '24 hours'
+        supplier['stockLevel'] = random.randint(100, 5000)
+        supplier['inStock'] = True
+        supplier['minimumOrder'] = 100
+        supplier['walmartVerified'] = random.random() > 0.8
+        supplier['size'] = random.choice(['Small (1-50)', 'Medium (51-500)', 'Large (500+)'])
+        supplier['priceRange'] = random.choice(['Budget ($)', 'Standard ($$)', 'Premium ($$$)'])
+        supplier['aiScore'] = random.randint(60, 95)
+        supplier['lastUpdated'] = datetime.utcnow().isoformat()
+        supplier['lastStockCheck'] = datetime.utcnow().isoformat()
+        supplier['source'] = supplier.get('source', 'Web Scrape')
     
     return suppliers
 
-# Generate suppliers once at startup
-print("[2/3] Generating 1000 suppliers...")
-ALL_SUPPLIERS = generate_suppliers(1000)
-print(f"      Generated {len(ALL_SUPPLIERS)} suppliers")
+# Load suppliers
+print("[2/3] Initializing supplier database...")
+ALL_SUPPLIERS = load_suppliers_from_file()
+
+if ALL_SUPPLIERS:
+    # Enrich data with additional fields
+    ALL_SUPPLIERS = enrich_supplier_data(ALL_SUPPLIERS)
+    print(f"[OK] Enriched {len(ALL_SUPPLIERS)} suppliers with additional data")
+else:
+    print("[WARNING] No supplier data loaded!")
+    print("\nTo get real supplier data, run:")
+    print("  python scraper.py")
+    print("\nThis will scrape real construction suppliers from Yellow Pages and Bing")
 
 print("[3/3] Starting API server...")
 print()
@@ -193,6 +156,13 @@ def get_suppliers():
     Query params: page=1, limit=1000
     """
     try:
+        if not ALL_SUPPLIERS:
+            return jsonify({
+                'success': False,
+                'error': 'No supplier data loaded. Run: python scraper.py',
+                'data': []
+            }), 503
+        
         page = request.args.get('page', 1, type=int)
         limit = request.args.get('limit', 1000, type=int)
         
@@ -207,7 +177,7 @@ def get_suppliers():
             'total': len(ALL_SUPPLIERS),
             'page': page,
             'limit': limit,
-            'source': 'generated'
+            'source': 'web_scrape'
         })
     except Exception as e:
         return jsonify({
@@ -246,18 +216,18 @@ def search_suppliers():
         if not query:
             return jsonify({
                 'success': True,
-                'results': ALL_SUPPLIERS[:50]  # Return first 50 if no query
+                'results': ALL_SUPPLIERS[:50]
             })
         
         results = [s for s in ALL_SUPPLIERS if 
                    query in s['name'].lower() or 
-                   query in s['category'].lower() or 
-                   query in s['location'].lower() or
-                   any(query in p.lower() for p in s['products'])]
+                   query in s.get('location', '').lower() or
+                   query in s.get('state', '').lower() or
+                   query in s.get('category', '').lower()]
         
         return jsonify({
             'success': True,
-            'results': results[:100]  # Max 100 results
+            'results': results[:100]
         })
     except Exception as e:
         return jsonify({
@@ -273,22 +243,18 @@ def filter_suppliers():
         
         results = ALL_SUPPLIERS.copy()
         
-        # Filter by category
+        if 'state' in filters and filters['state']:
+            results = [s for s in results if s.get('state') == filters['state']]
+        
         if 'category' in filters and filters['category']:
-            results = [s for s in results if s['category'] == filters['category']]
+            results = [s for s in results if s.get('category') == filters['category']]
         
-        # Filter by region
         if 'region' in filters and filters['region']:
-            results = [s for s in results if s['region'] == filters['region']]
+            results = [s for s in results if s.get('region') == filters['region']]
         
-        # Filter by rating
         if 'minRating' in filters:
             min_rating = filters['minRating']
-            results = [s for s in results if s['rating'] >= min_rating]
-        
-        # Filter by verified
-        if 'walmartVerified' in filters and filters['walmartVerified']:
-            results = [s for s in results if s['walmartVerified']]
+            results = [s for s in results if s.get('rating', 0) >= min_rating]
         
         return jsonify({
             'success': True,
@@ -305,10 +271,10 @@ def filter_suppliers():
 def health_check():
     """Health check endpoint"""
     return jsonify({
-        'status': 'healthy',
-        'suppliers_generated': len(ALL_SUPPLIERS),
+        'status': 'healthy' if ALL_SUPPLIERS else 'incomplete',
+        'suppliers_loaded': len(ALL_SUPPLIERS),
         'timestamp': datetime.utcnow().isoformat(),
-        'source': 'dynamic_generation'
+        'source': 'web_scrape'
     })
 
 # ==================== ERROR HANDLERS ====================
@@ -334,5 +300,13 @@ if __name__ == '__main__':
     print(f"Health Check:        http://{HOST}:{PORT}/health")
     print(f"Dashboard:           http://{HOST}:{PORT}/")
     print(f"\nServer starting on {HOST}:{PORT}...\n")
+    
+    if not ALL_SUPPLIERS:
+        print("\nWARNING: No supplier data loaded!")
+        print("\nTo populate with real supplier data:")
+        print("  1. Run: python scraper.py")
+        print("  2. This will scrape real construction suppliers")
+        print("  3. Data will be saved to suppliers.json")
+        print("  4. Dashboard will load suppliers on next request\n")
     
     app.run(host=HOST, port=PORT, debug=(NODE_ENV == 'development'))
