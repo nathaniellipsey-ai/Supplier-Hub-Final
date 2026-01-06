@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier Search Engine - Local Example</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&family=Space+Grotesk:wght@500;700&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --walmart-blue: #0071ce;
+            --walmart-yellow: #ffc220;
+            --walmart-dark-blue: #004c91;
+            --light-bg: #f8f9fa;
+            --border: #e0e0e0;
+            --heading-font: 'Bebas Neue', 'Impact', sans-serif;
+            --body-font: 'Inter', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            font-family: var(--body-font);
+            background: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: var(--walmart-blue);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 4px solid var(--walmart-yellow);
+        }
+
+        .header h1 {
+            font-family: var(--heading-font);
+            font-size: 3em;
+            margin: 0;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            margin-top: 10px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .search-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .search-bar button {
+            padding: 10px 20px;
+            background: var(--walmart-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .search-bar button:hover {
+            background: var(--walmart-dark-blue);
+        }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .filter-group {
+            margin-bottom: 20px;
+        }
+
+        .filter-group h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--walmart-blue);
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .filter-group input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .supplier-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .supplier-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        .supplier-card h3 {
+            color: var(--walmart-blue);
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .supplier-card .category {
+            display: inline-block;
+            background: var(--walmart-yellow);
+            color: black;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .supplier-card .info {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .supplier-card .rating {
+            color: #ff9800;
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .supplier-card .verified {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .toolbar {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .toolbar-left {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--walmart-blue);
+        }
+
+        .toolbar-right {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .pagination {
+            text-align: center;
+            padding: 20px;
+            gap: 10px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.3s;
+        }
+
+        .pagination button:hover {
+            background: var(--light-bg);
+        }
+
+        .pagination button.active {
+            background: var(--walmart-blue);
+            color: white;
+            border-color: var(--walmart-blue);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SUPPLIER SEARCH</h1>
+        <p>💼 Find Construction Materials & Products | 📌 Local Example Version</p>
+    </div>
+
+    <div class="container">
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search suppliers by name or products..." onkeyup="searchSuppliers()">
+            <button onclick="searchSuppliers()">Search</button>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-group">
+                <h3>Category</h3>
+                <label><input type="checkbox" class="categoryFilter" value="Steel" onchange="applyFilters()"> Steel & Metal</label>
+                <label><input type="checkbox" class="categoryFilter" value="Concrete" onchange="applyFilters()"> Concrete & Aggregates</label>
+                <label><input type="checkbox" class="categoryFilter" value="Lumber" onchange="applyFilters()"> Lumber & Wood</label>
+                <label><input type="checkbox" class="categoryFilter" value="Electrical" onchange="applyFilters()"> Electrical</label>
+                <label><input type="checkbox" class="categoryFilter" value="HVAC" onchange="applyFilters()"> HVAC & Mechanical</label>
+            </div>
+            
+            <div class="filter-group">
+                <h3>Rating</h3>
+                <label><input type="checkbox" class="ratingFilter" value="5" onchange="applyFilters()"> ⭐⭐⭐⭐⭐ 5 Star Only</label>
+                <label><input type="checkbox" class="ratingFilter" value="4" onchange="applyFilters()"> ⭐⭐⭐⭐ 4+ Stars</label>
+                <label><input type="checkbox" class="ratingFilter" value="3" onchange="applyFilters()"> ⭐⭐⭐ 3+ Stars</label>
+            </div>
+
+            <div class="filter-group">
+                <h3>Verification</h3>
+                <label><input type="checkbox" id="verifiedOnly" onchange="applyFilters()"> Walmart Verified Only</label>
+            </div>
+            
+            <button onclick="clearFilters()" style="width: 100%; padding: 10px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Clear All Filters</button>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <span id="resultCount">0</span> suppliers found
+            </div>
+            <div class="toolbar-right">
+                💾 Local Mode (Sample Data)
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results" id="results"></div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+    <script>
+        // ============================================
+        // SAMPLE SUPPLIER DATA (LOCAL)
+        // ============================================
+        const allSuppliers = [
+            {
+                id: 1,
+                name: 'SteelWorks Industrial',
+                category: 'Steel',
+                location: 'Pittsburgh, PA',
+                products: ['Structural Steel', 'Rebar', 'Steel Plate'],
+                rating: 4.8,
+                reviews: 127,
+                walmartVerified: true,
+                phone: '(412) 555-0101',
+                email: 'info@steelworks.com'
+            },
+            {
+                id: 2,
+                name: 'ConcreteMasters Pro',
+                category: 'Concrete',
+                location: 'Austin, TX',
+                products: ['Ready Mix Concrete', 'Aggregates', 'Concrete Additives'],
+                rating: 4.6,
+                reviews: 89,
+                walmartVerified: true,
+                phone: '(512) 555-0202',
+                email: 'sales@concretemasters.com'
+            },
+            {
+                id: 3,
+                name: 'Premium Lumber Co',
+                category: 'Lumber',
+                location: 'Portland, OR',
+                products: ['Framing Lumber', 'Plywood', 'OSB Panels'],
+                rating: 4.4,
+                reviews: 156,
+                walmartVerified: true,
+                phone: '(503) 555-0303',
+                email: 'orders@premierlumber.com'
+            },
+            {
+                id: 4,
+                name: 'ElectroSupply Solutions',
+                category: 'Electrical',
+                location: 'Dallas, TX',
+                products: ['Electrical Wire', 'Conduit', 'Breaker Panels', 'Outlets'],
+                rating: 4.7,
+                reviews: 203,
+                walmartVerified: true,
+                phone: '(214) 555-0404',
+                email: 'support@electrosupply.com'
+            },
+            {
+                id: 5,
+                name: 'HVAC Specialists Ltd',
+                category: 'HVAC',
+                location: 'Chicago, IL',
+                products: ['AC Units', 'Furnaces', 'Ductwork', 'Thermostats'],
+                rating: 4.5,
+                reviews: 98,
+                walmartVerified: true,
+                phone: '(312) 555-0505',
+                email: 'sales@hvacspecialists.com'
+            },
+            {
+                id: 6,
+                name: 'Titanium Steel Corp',
+                category: 'Steel',
+                location: 'Charlotte, NC',
+                products: ['Structural Steel', 'Welding Materials', 'Steel Angles'],
+                rating: 4.3,
+                reviews: 76,
+                walmartVerified: false,
+                phone: '(704) 555-0606',
+                email: 'info@titaniumsteel.com'
+            },
+            {
+                id: 7,
+                name: 'GreenCrete Environmental',
+                category: 'Concrete',
+                location: 'Denver, CO',
+                products: ['Eco-Concrete', 'Recycled Aggregates', 'Concrete Sealers'],
+                rating: 4.9,
+                reviews: 64,
+                walmartVerified: true,
+                phone: '(303) 555-0707',
+                email: 'green@greencrete.com'
+            },
+            {
+                id: 8,
+                name: 'Hardwood Traders International',
+                category: 'Lumber',
+                location: 'Atlanta, GA',
+                products: ['Hardwood Flooring', 'Trim Molding', 'Exotic Woods'],
+                rating: 4.7,
+                reviews: 134,
+                walmartVerified: true,
+                phone: '(404) 555-0808',
+                email: 'sales@hardwoodtraders.com'
+            },
+            {
+                id: 9,
+                name: 'PowerLine Electrical',
+                category: 'Electrical',
+                location: 'Houston, TX',
+                products: ['Power Distribution', 'LED Fixtures', 'Safety Equipment'],
+                rating: 4.6,
+                reviews: 112,
+                walmartVerified: true,
+                phone: '(713) 555-0909',
+                email: 'info@powerline.com'
+            },
+            {
+                id: 10,
+                name: 'Comfort Climate Systems',
+                category: 'HVAC',
+                location: 'Miami, FL',
+                products: ['Heat Pumps', 'Air Handlers', 'Refrigerant', 'Installation Tools'],
+                rating: 4.4,
+                reviews: 87,
+                walmartVerified: true,
+                phone: '(305) 555-1010',
+                email: 'support@comfortclimate.com'
+            },
+            {
+                id: 11,
+                name: 'Mega Steel Distributor',
+                category: 'Steel',
+                location: 'Cleveland, OH',
+                products: ['Beams', 'Columns', 'Plates', 'Custom Steel'],
+                rating: 4.5,
+                reviews: 201,
+                walmartVerified: true,
+                phone: '(216) 555-1111',
+                email: 'sales@megasteel.com'
+            },
+            {
+                id: 12,
+                name: 'ReadyMix Direct Supply',
+                category: 'Concrete',
+                location: 'Phoenix, AZ',
+                products: ['Custom Mix Concrete', 'Pumping Service', 'Testing Service'],
+                rating: 4.2,
+                reviews: 156,
+                walmartVerified: false,
+                phone: '(602) 555-1212',
+                email: 'orders@readymixdirect.com'
+            },
+            {
+                id: 13,
+                name: 'Pacific Lumber Mill',
+                category: 'Lumber',
+                location: 'Seattle, WA',
+                products: ['Dimensional Lumber', 'Engineered Wood', 'Wood Beams'],
+                rating: 4.8,
+                reviews: 178,
+                walmartVerified: true,
+                phone: '(206) 555-1313',
+                email: 'info@pacificlumber.com'
+            },
+            {
+                id: 14,
+                name: 'BrightLight Electric Supply',
+                category: 'Electrical',
+                location: 'San Francisco, CA',
+                products: ['Commercial Wiring', 'Automation Systems', 'Energy Monitoring'],
+                rating: 4.9,
+                reviews: 267,
+                walmartVerified: true,
+                phone: '(415) 555-1414',
+                email: 'sales@brightlight.com'
+            },
+            {
+                id: 15,
+                name: 'ThermalTech HVAC',
+                category: 'HVAC',
+                location: 'Boston, MA',
+                products: ['Smart Thermostats', 'Zoning Systems', 'Air Quality', 'Maintenance Plans'],
+                rating: 4.7,
+                reviews: 145,
+                walmartVerified: true,
+                phone: '(617) 555-1515',
+                email: 'support@thermaltech.com'
+            },
+            {
+                id: 16,
+                name: 'Industrial Steel Solutions',
+                category: 'Steel',
+                location: 'Detroit, MI',
+                products: ['Fabricated Steel', 'Stainless Steel', 'Tool Steel'],
+                rating: 4.3,
+                reviews: 92,
+                walmartVerified: true,
+                phone: '(313) 555-1616',
+                email: 'info@indsteel.com'
+            },
+            {
+                id: 17,
+                name: 'QuickSet Concrete',
+                category: 'Concrete',
+                location: 'Minneapolis, MN',
+                products: ['Fast-Set Concrete', 'Repair Products', 'Admixtures'],
+                rating: 4.6,
+                reviews: 118,
+                walmartVerified: true,
+                phone: '(612) 555-1717',
+                email: 'sales@quicksetconcrete.com'
+            },
+            {
+                id: 18,
+                name: 'TimberTrade Global',
+                category: 'Lumber',
+                location: 'Memphis, TN',
+                products: ['Import Lumber', 'Specialty Woods', 'Certified Sustainable'],
+                rating: 4.5,
+                reviews: 103,
+                walmartVerified: false,
+                phone: '(901) 555-1818',
+                email: 'trade@timbertrade.com'
+            },
+            {
+                id: 19,
+                name: 'VoltageControl Systems',
+                category: 'Electrical',
+                location: 'Los Angeles, CA',
+                products: ['Voltage Regulators', 'Surge Protection', 'Power Backup'],
+                rating: 4.4,
+                reviews: 147,
+                walmartVerified: true,
+                phone: '(323) 555-1919',
+                email: 'support@voltagecontrol.com'
+            },
+            {
+                id: 20,
+                name: 'AirFlow Innovations',
+                category: 'HVAC',
+                location: 'Washington, DC',
+                products: ['Advanced Ductwork', 'Air Filters', 'Energy Recovery'],
+                rating: 4.8,
+                reviews: 156,
+                walmartVerified: true,
+                phone: '(202) 555-2020',
+                email: 'info@airflow.com'
+            }
+        ];
+
+        // ============================================
+        // STATE VARIABLES
+        // ============================================
+        let filteredSuppliers = [...allSuppliers];
+        let currentPage = 1;
+        const itemsPerPage = 12;
+
+        // ============================================
+        // FILTER & SEARCH FUNCTIONS
+        // ============================================
+        function searchSuppliers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            filteredSuppliers = allSuppliers.filter(supplier => {
+                const matchesSearch = 
+                    supplier.name.toLowerCase().includes(searchTerm) ||
+                    supplier.products.some(p => p.toLowerCase().includes(searchTerm)) ||
+                    supplier.category.toLowerCase().includes(searchTerm) ||
+                    supplier.location.toLowerCase().includes(searchTerm);
+                
+                return matchesSearch;
+            });
+            
+            currentPage = 1;
+            renderResults();
+        }
+
+        function applyFilters() {
+            const selectedCategories = Array.from(document.querySelectorAll('.categoryFilter:checked')).map(c => c.value);
+            const selectedRatings = Array.from(document.querySelectorAll('.ratingFilter:checked')).map(c => parseInt(c.value));
+            const verifiedOnly = document.getElementById('verifiedOnly').checked;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            filteredSuppliers = allSuppliers.filter(supplier => {
+                // Search filter
+                const matchesSearch = !searchTerm || 
+                    supplier.name.toLowerCase().includes(searchTerm) ||
+                    supplier.products.some(p => p.toLowerCase().includes(searchTerm));
+
+                // Category filter
+                const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(supplier.category);
+
+                // Rating filter
+                const matchesRating = selectedRatings.length === 0 || selectedRatings.some(r => supplier.rating >= r);
+
+                // Verified filter
+                const matchesVerified = !verifiedOnly || supplier.walmartVerified;
+
+                return matchesSearch && matchesCategory && matchesRating && matchesVerified;
+            });
+
+            currentPage = 1;
+            renderResults();
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            filteredSuppliers = [...allSuppliers];
+            currentPage = 1;
+            renderResults();
+        }
+
+        // ============================================
+        // RENDER FUNCTIONS
+        // ============================================
+        function renderResults() {
+            const resultsDiv = document.getElementById('results');
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageResults = filteredSuppliers.slice(start, end);
+
+            // Update count
+            document.getElementById('resultCount').textContent = filteredSuppliers.length;
+
+            // Render cards
+            resultsDiv.innerHTML = pageResults.map(supplier => `
+                <div class="supplier-card">
+                    <h3>${supplier.name}</h3>
+                    <span class="category">${supplier.category}</span>
+                    <div class="info">
+                        <strong>📍 Location:</strong> ${supplier.location}<br>
+                        <strong>📦 Products:</strong> ${supplier.products.join(', ')}<br>
+                        <strong>📞 Phone:</strong> ${supplier.phone}<br>
+                        <strong>✉️ Email:</strong> ${supplier.email}
+                    </div>
+                    <div class="rating">⭐ ${supplier.rating}/5 (${supplier.reviews} reviews)</div>
+                    ${supplier.walmartVerified ? '<span class="verified">✓ Walmart Verified</span>' : ''}
+                </div>
+            `).join('');
+
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const paginationDiv = document.getElementById('pagination');
+            const totalPages = Math.ceil(filteredSuppliers.length / itemsPerPage);
+            
+            let html = '';
+            
+            if (currentPage > 1) {
+                html += `<button onclick="currentPage = 1; renderResults()">« First</button>`;
+                html += `<button onclick="currentPage--; renderResults()">‹ Previous</button>`;
+            }
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i >= currentPage - 2 && i <= currentPage + 2) {
+                    html += `<button ${i === currentPage ? 'class="active"' : ''} onclick="currentPage = ${i}; renderResults()">${i}</button>`;
+                }
+            }
+
+            if (currentPage < totalPages) {
+                html += `<button onclick="currentPage++; renderResults()">Next ›</button>`;
+                html += `<button onclick="currentPage = ${totalPages}; renderResults()">Last »</button>`;
+            }
+
+            paginationDiv.innerHTML = html;
+        }
+
+        // ============================================
+        // INITIALIZE
+        // ============================================
+        window.addEventListener('load', () => {
+            renderResults();
+            console.log('📊 Supplier Dashboard loaded with', allSuppliers.length, 'suppliers');
+            console.log('💾 Local Example Mode - All data is hardcoded');
+        });
+    </script>
+</body>
+</html>

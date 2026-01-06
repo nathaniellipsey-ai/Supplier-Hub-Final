@@ -1,0 +1,67 @@
+================================================================================
+  🚐 EXACT COMMANDS TO COPY & PASTE - NO THINKING REQUIRED
+================================================================================
+
+Do EXACTLY this:
+
+1. Open PowerShell (search "PowerShell" in Windows)
+
+2. Copy the ENTIRE block below:
+
+---COPY EVERYTHING BELOW THIS LINE---
+
+cd "C:\Users\n0l08i7\OneDrive - Walmart Inc\Code Puppy\Supplier"
+git add .
+git commit -m "Deployment ready: Production server, Render config, documentation"
+git push origin main
+
+---COPY EVERYTHING ABOVE THIS LINE---
+
+3. Right-click in PowerShell and paste
+
+4. Press Enter
+
+5. Wait for it to finish
+
+================================================================================
+  THAT'S IT!
+================================================================================
+
+Those 4 commands will:
+  ✅ Navigate to your folder
+  ✅ Add all new/changed files
+  ✅ Commit them with a message
+  ✅ Push to GitHub
+
+After that:
+  ✅ Your changes appear on GitHub
+  ✅ Render sees the changes
+  ✅ Render auto-deploys
+  ✅ Your app goes live
+
+================================================================================
+  IF YOU GET STUCK:
+================================================================================
+
+If PowerShell asks for:
+  - Username: Type your GitHub username
+  - Password: Type your GitHub password or token
+
+If you see errors:
+  - Read: COMMIT_GUIDE.txt (has solutions)
+  - Or: GIT_COMMIT_NOW.txt (detailed help)
+
+================================================================================
+  DO IT NOW!
+================================================================================
+
+Just:
+1. Open PowerShell
+2. Copy those 4 lines
+3. Paste in PowerShell
+4. Press Enter
+5. Wait
+
+Done!
+
+================================================================================

@@ -1,0 +1,275 @@
+================================================================================
+  CREATE NEW RENDER SERVICE - PROPERLY CONNECTED TO GITHUB
+================================================================================
+
+Since Render isn't detecting changes, we need to create a fresh service.
+
+Do these steps EXACTLY:
+
+================================================================================
+  STEP 1: Go to Render Dashboard
+================================================================================
+
+1. Open: https://dashboard.render.com
+
+2. Make sure you're LOGGED IN
+
+3. You should see your dashboard
+
+================================================================================
+  STEP 2: Delete Old Service (Optional but Recommended)
+================================================================================
+
+If you have an old service that's not working:
+
+1. Click on it
+2. Go to: Settings tab
+3. Scroll to bottom
+4. Click: "Delete Service"
+5. Type the name to confirm
+6. Click: Delete
+
+(This clears out the old broken one)
+
+================================================================================
+  STEP 3: Create New Service
+================================================================================
+
+1. On Render dashboard, click: "+New" (top right)
+
+2. Click: "Web Service"
+
+3. You'll see two options:
+   - "Build and deploy from a Git repository"
+   - "Deploy an existing image"
+
+4. Click: "Build and deploy from a Git repository"
+
+================================================================================
+  STEP 4: Connect GitHub
+================================================================================
+
+1. You'll see: "Connect a repository"
+
+2. If GitHub isn't connected:
+   - Click: "Connect account"
+   - Click: "GitHub"
+   - Authorize Render to access GitHub
+   - Click: "Install" when asked
+
+3. If GitHub IS connected:
+   - You should see a search box
+   - Type: "supplier"
+   - Look for: "supplier-portal"
+   - Click: "Connect" on that repo
+
+================================================================================
+  STEP 5: Configure Service Settings
+================================================================================
+
+After connecting the repo, fill in:
+
+Name:
+  walmart-supplier-portal
+
+Runtime:
+  Node
+
+Build Command:
+  npm install
+
+Start Command:
+  node server.js
+
+Environment:
+  Leave blank (or set NODE_ENV=production if available)
+
+Instance Type:
+  Free
+
+Branch:
+  main
+
+Auto-deploy:
+  Yes
+
+================================================================================
+  STEP 6: Leave Everything Else Default
+================================================================================
+
+Don't change:
+- Health Check Path (leave blank or /health)
+- Root Directory (leave blank)
+- Any other settings
+
+Just scroll down...
+
+================================================================================
+  STEP 7: CREATE THE SERVICE
+================================================================================
+
+1. Click: "Create Web Service" (bottom right)
+
+2. Render will start building
+
+3. Status will show:
+   - "Syncing" or "Cloning"
+   - "Building"
+   - Then "Live" (green)
+
+================================================================================
+  STEP 8: WAIT FOR BUILD TO COMPLETE
+================================================================================
+
+This takes 2-3 minutes.
+
+Watch the Logs tab:
+
+You should see:
+  - Cloning from git...
+  - Running build command: npm install
+  - Various package installation messages
+  - Running start command: node server.js
+  - "Server running on port..."
+  - "All endpoints integrated into single service!"
+  - Health check passed
+
+When you see "Live" status (green):
+  SUCCESS!
+
+================================================================================
+  STEP 9: GET YOUR URL
+================================================================================
+
+At the top of Render dashboard, you'll see your URL:
+
+  https://walmart-supplier-portal-xxxxx.onrender.com
+
+Copy this URL.
+
+================================================================================
+  STEP 10: TEST YOUR APP
+================================================================================
+
+1. Click your Render URL
+
+2. Your dashboard should load
+
+3. Try:
+   - Search for "electronics"
+   - Click a supplier
+   - Add to favorites
+   - Add a note
+
+4. Everything working?
+   SUCCESS! Your app is LIVE!
+
+================================================================================
+  STEP 11: VERIFY GITHUB CONNECTION
+================================================================================
+
+Go to Settings tab on Render.
+
+Verify you see:
+  - Repository: supplier-portal
+  - Branch: main
+  - Auto-Deploy: Enabled
+
+If Auto-Deploy is OFF, turn it ON.
+
+Now future git pushes will auto-deploy!
+
+================================================================================
+  TROUBLESHOOTING DURING BUILD
+================================================================================
+
+If build fails and shows ERROR:
+
+1. Read the error message in logs
+
+2. Common errors:
+
+   "Cannot find module 'express'"
+   - Solution: Run locally: npm install
+   - Then: git add . && git commit -m "fix" && git push
+   - Then: Click "Manual Deploy" on Render
+
+   "ENOENT: no such file or directory"
+   - Solution: File is missing from GitHub
+   - Check GitHub repo has the file
+   - If not, push it: git add . && git commit -m "add files" && git push
+   - Try deploy again
+
+   "server.js not found"
+   - Solution: Check GitHub repo
+   - Make sure server.js exists in root
+   - If not in GitHub, push it
+   - Try again
+
+3. If error persists:
+   - Tell me the error message
+   - I'll help fix it
+
+================================================================================
+  IF BUILD HANGS
+================================================================================
+
+If it says "Building" for more than 10 minutes:
+
+1. Go to Settings
+2. Click "Manual Deploy"
+3. Wait another 5 minutes
+4. If still stuck, delete service and create new one
+
+================================================================================
+  FINAL CHECKLIST
+================================================================================
+
+- [ ] Opened Render dashboard
+- [ ] Clicked "+New"
+- [ ] Selected "Web Service"
+- [ ] Connected GitHub repo (supplier-portal)
+- [ ] Filled in service settings:
+    - Name: walmart-supplier-portal
+    - Runtime: Node
+    - Build: npm install
+    - Start: node server.js
+- [ ] Clicked "Create Web Service"
+- [ ] Waited for "Live" status (2-3 minutes)
+- [ ] Clicked Render URL
+- [ ] Dashboard loaded
+- [ ] Tested features (search, favorites, notes)
+- [ ] All working!
+
+If all checked: SUCCESS!
+
+================================================================================
+  DO THIS NOW!
+================================================================================
+
+1. Go to: https://dashboard.render.com
+
+2. Click: "+New" (top right)
+
+3. Click: "Web Service"
+
+4. Click: "Build and deploy from a Git repository"
+
+5. Connect your supplier-portal repo
+
+6. Fill in settings as shown above
+
+7. Click: "Create Web Service"
+
+8. Wait 2-3 minutes for "Live" status
+
+9. Click your URL
+
+10. Done!
+
+================================================================================
+Created: December 2025
+Author: Code Puppy
+Purpose: Create new Render service properly connected to GitHub
+Status: Ready to deploy
+================================================================================

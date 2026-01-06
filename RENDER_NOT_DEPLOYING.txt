@@ -1,0 +1,140 @@
+================================================================================
+  RENDER NOT AUTO-DEPLOYING - HERE'S THE FIX
+================================================================================
+
+PROBLEM:
+  - Files are on GitHub
+  - You committed them
+  - But Render doesn't deploy anything
+
+REASON:
+  Render isn't connected to watch your GitHub repo for changes
+  OR you need to manually trigger a deploy
+
+================================================================================
+  SOLUTION #1: MANUAL DEPLOY (FASTEST - 2 MINUTES)
+================================================================================
+
+1. Go to: https://dashboard.render.com
+
+2. Find your service (walmart-supplier-portal or similar)
+
+3. Look for a button like:
+   - "Manual Deploy"
+   - "Deploy Latest"
+   - "Redeploy"
+   - "Deploy"
+
+4. Click it
+
+5. Watch the status:
+   Yellow "Building" - 2-3 minutes
+   Green "Live" - Done!
+
+6. Check the logs:
+   - Should show: "npm install"
+   - Should show: "Server running on port"
+   - Should show: "All endpoints integrated"
+
+7. Test your app:
+   - Click the URL
+   - Dashboard should load
+   - SUCCESS!
+
+================================================================================
+  SOLUTION #2: ENABLE AUTO-DEPLOY (PERMANENT FIX)
+================================================================================
+
+If you want Render to auto-deploy on every GitHub push:
+
+1. Go to: https://dashboard.render.com
+
+2. Click your service
+
+3. Go to: Settings tab (usually on the right)
+
+4. Look for: "Git Connection" or "GitHub Connection"
+
+5. Make sure it shows:
+   - Repository: supplier-portal (or your repo name)
+   - Branch: main
+   - Auto-Deploy: ENABLED (turn ON if it's OFF)
+
+6. Save settings
+
+7. Now future pushes will auto-deploy!
+
+================================================================================
+  SOLUTION #3: RECONNECT GITHUB (IF NEEDED)
+================================================================================
+
+If GitHub isn't connected:
+
+1. Go to: https://dashboard.render.com
+
+2. Click your service
+
+3. Go to: Settings
+
+4. Look for: "Git Connection"
+
+5. If it says "Not connected" or similar:
+   - Click "Connect Repository"
+   - Select your GitHub account
+   - Select: supplier-portal
+   - Click "Connect"
+
+6. Set:
+   - Branch: main
+   - Auto-Deploy: ON
+
+7. Save
+
+8. Render will immediately start a deploy!
+
+================================================================================
+  QUICK FIX - DO THIS NOW
+================================================================================
+
+1. Go to: https://dashboard.render.com
+
+2. Click your service name
+
+3. Look for a button labeled:
+   - "Deploy" or
+   - "Manual Deploy" or
+   - "Redeploy"
+
+4. Click it
+
+5. Wait 2-3 minutes
+
+6. Watch status change to green "Live"
+
+7. Click your Render URL
+
+8. Dashboard should load!
+
+If it works: Problem solved!
+
+================================================================================
+  NEXT STEPS
+================================================================================
+
+1. Go to Render dashboard: https://dashboard.render.com
+
+2. Find your service
+
+3. Click the "Deploy" button
+
+4. Wait 2-3 minutes
+
+5. Check status is "Live" (green)
+
+6. Click your Render URL
+
+7. Test the dashboard
+
+8. SUCCESS!
+
+================================================================================

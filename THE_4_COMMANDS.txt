@@ -1,0 +1,87 @@
+================================================================================
+  🚀 THE 4 GIT COMMANDS YOU NEED TO RUN
+================================================================================
+
+These are the EXACT 4 commands:
+
+1.  cd "C:\Users\n0l08i7\OneDrive - Walmart Inc\Code Puppy\Supplier"
+
+2.  git add .
+
+3.  git commit -m "Deployment ready: Production server, Render config, documentation"
+
+4.  git push origin main
+
+================================================================================
+  HOW TO RUN THEM:
+================================================================================
+
+1. Open Windows PowerShell
+   (Search for "PowerShell" in Windows)
+
+2. Copy-paste this ENTIRE BLOCK into PowerShell:
+
+   cd "C:\Users\n0l08i7\OneDrive - Walmart Inc\Code Puppy\Supplier"
+   git add .
+   git commit -m "Deployment ready: Production server, Render config, documentation"
+   git push origin main
+
+3. Press Enter
+
+4. Wait for it to finish
+
+5. That's it!
+
+================================================================================
+  WHAT EACH COMMAND DOES:
+================================================================================
+
+1. cd "C:\Users\n0l08i7\OneDrive - Walmart Inc\Code Puppy\Supplier"
+   → Changes to your Supplier folder
+   → Where all your files are
+
+2. git add .
+   → Stages all files for commit
+   → Tells Git: "I want to save these files"
+
+3. git commit -m "..."
+   → Creates a snapshot of your files
+   → Saves them with a description
+   → The message describes what changed
+
+4. git push origin main
+   → Sends your files to GitHub
+   → Makes them visible on GitHub
+   → Render will see them and auto-deploy
+
+================================================================================
+  RESULT:
+================================================================================
+
+After running these 4 commands:
+
+✅ Your files go to GitHub
+✅ Render sees the changes
+✅ Render auto-builds your app
+✅ Render deploys to production
+✅ Your app is LIVE
+
+Timeline:
+  - Command 4: ~10 seconds (push to GitHub)
+  - GitHub: ~5 seconds (receive files)
+  - Render: ~30 seconds (detect changes)
+  - Render build: ~2-3 minutes
+  - App live: Total ~3-4 minutes
+
+================================================================================
+  THAT'S LITERALLY ALL YOU NEED TO DO
+================================================================================
+
+No other steps.
+No other commands.
+No other files.
+Just these 4 commands.
+
+Your app will be LIVE.
+
+================================================================================
