@@ -3414,21 +3414,40 @@ function updateStats() {
                 localStorage.setItem('currentUser', userEmail);
             }
             
+            // PUBLIC DASHBOARD: Set default guest user if not logged in
+            // This is a public supplier portal, so we allow guest access
             if (!userEmail) {
-                // Redirect to login
-                window.location.href = 'login.html';
-                return false;
+                userEmail = 'guest@supplier-portal.local';
+                localStorage.setItem('currentUser', userEmail);
+                console.log('🌐 Public portal mode - using guest user');
             }
 
             currentUser = userEmail;
+            console.log('Current user:', currentUser);
             
-            // Load user data from storage (SharePoint or localStorage)
-            userData = await storage.getUser(userEmail);
-
-            if (!userData) {
-                localStorage.removeItem('currentUser');
-                window.location.href = 'login.html';
-                return false;
+            // Try to load user data from storage, but don't require it for public access
+            try {
+                userData = await storage.getUser(userEmail);
+                if (!userData) {
+                    // Create default guest user data
+                    userData = {
+                        email: userEmail,
+                        name: 'Guest User',
+                        role: 'viewer',
+                        favorites: [],
+                        preferences: {}
+                    };
+                    console.log('✅ Using default guest user data');
+                }
+            } catch (error) {
+                console.log('ℹ️ Using default guest user data (no storage available)');
+                userData = {
+                    email: userEmail,
+                    name: 'Guest User',
+                    role: 'viewer',
+                    favorites: [],
+                    preferences: {}
+                };
             }
 
             // Update UI with user name
