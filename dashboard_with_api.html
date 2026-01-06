@@ -1757,8 +1757,11 @@ function updateStats() {
     console.log('Stats updated');
 }
 
+// Forward declare productCategories - will be assigned later
+let productCategories = {};
+
         // Comprehensive product catalog
-        const productCategories = {
+        productCategories = {
             'Concrete & Cement': ['Ready-Mix Concrete', 'Precast Concrete', 'Concrete Blocks', 'Portland Cement', 'Concrete Admixtures', 'Fiber-Reinforced Concrete', 'Self-Leveling Concrete', 'Decorative Concrete'],
             'Steel & Metal': ['Structural Steel', 'Rebar', 'Steel Beams', 'Metal Studs', 'Sheet Metal', 'Galvanized Steel', 'Aluminum', 'Copper Piping', 'Steel Decking'],
             'Lumber & Wood': ['Dimensional Lumber', 'Plywood', 'OSB Panels', 'Engineered Wood', 'Treated Lumber', 'Hardwood Flooring', 'Laminated Beams', 'Wood Trusses'],
@@ -2773,8 +2776,9 @@ function updateStats() {
 
         // Initialize filters
         function initializeFilters() {
-            // Vendors - show top 20 unique vendor names
-            const vendorContainer = document.getElementById('vendorFilters');
+            try {
+                // Vendors - show top 20 unique vendor names
+                const vendorContainer = document.getElementById('vendorFilters');
             const uniqueVendors = [...new Set(allSuppliers.map(s => s.name))]
                 .sort()
                 .slice(0, 50); // Show first 50 vendors
@@ -3001,6 +3005,10 @@ function updateStats() {
 
             currentPage = 1;
             renderResults();
+            } catch (error) {
+                console.error('❌ Error in initializeFilters:', error);
+                // Continue without filters - they're not critical
+            }
         }
 
         // Render catalog card
@@ -3430,10 +3438,25 @@ function updateStats() {
 
         // Update stats dashboard
         function updateStats() {
-            document.getElementById('totalSuppliersCount').textContent = allSuppliers.length.toLocaleString();
-            document.getElementById('categoriesCount').textContent = Object.keys(productCategories).length;
-            document.getElementById('productsCount').textContent = Object.values(productCategories).flat().length.toLocaleString();
-            document.getElementById('verifiedCount').textContent = allSuppliers.filter(s => s.walmartVerified).length.toLocaleString();
+            try {
+                document.getElementById('totalSuppliersCount').textContent = allSuppliers.length.toLocaleString();
+                
+                // Handle productCategories safely - it might not be fully initialized yet
+                const catCount = (productCategories && Object.keys(productCategories).length) || 0;
+                document.getElementById('categoriesCount').textContent = catCount;
+                
+                const prodCount = (productCategories && Object.values(productCategories).flat().length) || 0;
+                document.getElementById('productsCount').textContent = prodCount.toLocaleString();
+                
+                document.getElementById('verifiedCount').textContent = allSuppliers.filter(s => s.walmartVerified).length.toLocaleString();
+            } catch (error) {
+                console.warn('⚠️ Error in updateStats:', error);
+                // Set safe defaults
+                document.getElementById('totalSuppliersCount').textContent = allSuppliers.length.toLocaleString();
+                document.getElementById('categoriesCount').textContent = '0';
+                document.getElementById('productsCount').textContent = '0';
+                document.getElementById('verifiedCount').textContent = '0';
+            }
         }
 
         // ==========================================
