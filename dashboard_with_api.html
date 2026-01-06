@@ -1849,6 +1849,9 @@ function updateStats() {
             enabled: false, // ⚠️ SET TO TRUE after creating SharePoint lists! (See SHAREPOINT-SETUP-GUIDE.html)
             useLocalStorageFallback: true // Use localStorage if SharePoint fails
         };
+        
+        // Initialize SharePoint service now that config is defined
+        setTimeout(() => initSharePointService(), 100);
 
         /* 
         📋 SHAREPOINT SETUP INSTRUCTIONS:
@@ -2215,14 +2218,27 @@ function updateStats() {
             }
         }
 
-        // Initialize SharePoint service
-        const spService = new SharePointService(SHAREPOINT_CONFIG);
+        // Initialize SharePoint service (will be set up after SHAREPOINT_CONFIG is defined)
+        let spService = null;
         let useSharePoint = false;
+        
+        // Initialize spService - will be called after SHAREPOINT_CONFIG is available
+        function initSharePointService() {
+            try {
+                if (typeof SHAREPOINT_CONFIG !== 'undefined' && typeof SharePointService !== 'undefined') {
+                    spService = new SharePointService(SHAREPOINT_CONFIG);
+                    console.log('✅ SharePoint service initialized');
+                }
+            } catch (error) {
+                console.warn('⚠️ Failed to initialize SharePoint service:', error);
+                spService = null;
+            }
+        }
 
         // Storage abstraction layer - uses SharePoint or localStorage
         const storage = {
             async getUser(email) {
-                if (useSharePoint) {
+                if (useSharePoint && spService) {
                     const profile = await spService.getUserProfile(email);
                     if (profile) {
                         const favorites = await spService.getFavorites(email);
@@ -2256,7 +2272,7 @@ function updateStats() {
             },
             
             async getFavorites(email) {
-                if (useSharePoint) {
+                if (useSharePoint && spService) {
                     return await spService.getFavorites(email);
                 } else {
                     const users = JSON.parse(localStorage.getItem('supplierPortalUsers') || '{}');
@@ -2265,7 +2281,7 @@ function updateStats() {
             },
             
             async addFavorite(email, supplierId) {
-                if (useSharePoint) {
+                if (useSharePoint && spService) {
                     return await spService.addFavorite(email, supplierId);
                 } else {
                     const users = JSON.parse(localStorage.getItem('supplierPortalUsers') || '{}');
@@ -2280,7 +2296,7 @@ function updateStats() {
             },
             
             async removeFavorite(email, supplierId) {
-                if (useSharePoint) {
+                if (useSharePoint && spService) {
                     return await spService.removeFavorite(email, supplierId);
                 } else {
                     const users = JSON.parse(localStorage.getItem('supplierPortalUsers') || '{}');
@@ -2294,7 +2310,7 @@ function updateStats() {
             },
             
             async getNotes(email) {
-                if (useSharePoint) {
+                if (useSharePoint && spService) {
                     return await spService.getNotes(email);
                 } else {
                     const users = JSON.parse(localStorage.getItem('supplierPortalUsers') || '{}');
@@ -2303,7 +2319,7 @@ function updateStats() {
             },
             
             async saveNote(email, supplierId, noteText) {
-                if (useSharePoint) {
+                if (useSharePoint && spService) {
                     return await spService.saveNote(email, supplierId, noteText);
                 } else {
                     const users = JSON.parse(localStorage.getItem('supplierPortalUsers') || '{}');
@@ -3385,7 +3401,13 @@ function updateStats() {
                     }, 7000); // 7 second overall timeout
                 });
                 
-                useSharePoint = await Promise.race([spService.init(), initTimeout]);
+                // Only try SharePoint if service is initialized and enabled
+                if (spService && SHAREPOINT_CONFIG.enabled) {
+                    useSharePoint = await Promise.race([spService.init(), initTimeout]);
+                } else {
+                    useSharePoint = false;
+                    console.log('⚠️ SharePoint not initialized or disabled');
+                }
                 
                 if (useSharePoint) {
                     console.log('✅ SharePoint connected! Using cloud storage.');
