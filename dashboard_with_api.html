@@ -3691,25 +3691,25 @@ let productCategories = {};
 
                 const currentNote = (userData.notes && userData.notes[supplierId]) || '';
 
-            const modalHTML = `
-                <div class="note-modal" id="noteModal">
-                    <div class="note-modal-content">
-                        <div class="note-modal-header">
-                            <h2 style="font-family: var(--heading-font); font-size: 1.5rem; letter-spacing: 1px;">📝 NOTES: ${supplier.name}</h2>
-                            <button onclick="closeNoteModal()" class="modal-close">✕</button>
-                        </div>
-                        <div class="note-modal-body">
-                            <textarea id="noteTextarea" placeholder="Add your notes about this supplier..." style="width: 100%; height: 200px; padding: 15px; font-family: var(--body-font); font-size: 1rem; border: 2px solid #ddd; resize: vertical;">${currentNote}</textarea>
-                            <div style="margin-top: 15px; display: flex; gap: 10px;">
-                                <button onclick="saveNote(${supplierId})" class="btn btn-primary" style="flex: 1; padding: 12px;">💾 SAVE NOTE</button>
-                                <button onclick="deleteNote(${supplierId})" class="btn btn-secondary" style="padding: 12px;">🗑️ DELETE</button>
+                const modalHTML = `
+                    <div class="note-modal" id="noteModal">
+                        <div class="note-modal-content">
+                            <div class="note-modal-header">
+                                <h2 style="font-family: var(--heading-font); font-size: 1.5rem; letter-spacing: 1px;">📝 NOTES: ${supplier.name}</h2>
+                                <button onclick="closeNoteModal()" class="modal-close">✕</button>
+                            </div>
+                            <div class="note-modal-body">
+                                <textarea id="noteTextarea" placeholder="Add your notes about this supplier..." style="width: 100%; height: 200px; padding: 15px; font-family: var(--body-font); font-size: 1rem; border: 2px solid #ddd; resize: vertical;">${currentNote}</textarea>
+                                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                                    <button onclick="saveNote(${supplierId})" class="btn btn-primary" style="flex: 1; padding: 12px;">💾 SAVE NOTE</button>
+                                    <button onclick="deleteNote(${supplierId})" class="btn btn-secondary" style="padding: 12px;">🗑️ DELETE</button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
 
-            document.body.insertAdjacentHTML('beforeend', modalHTML);
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
                 console.log('✅ Note modal opened for:', supplierId);
             } catch (error) {
                 console.error('❌ Error opening note modal:', error);
