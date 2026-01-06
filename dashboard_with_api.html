@@ -1648,6 +1648,11 @@ let compareMode = false; // Whether we're in compare mode
 let favoritesList = []; // List of favorite supplier IDs
 
 // Function to load suppliers from API
+// DEPRECATED: These functions are no longer used
+// The new initializeFromServer() handles all data loading
+// Keeping them here for reference only - they are NOT called
+
+/*
 async function loadSuppliersFromAPI(skip = 0, limit = 5000) {
     try {
         const response = await fetch(`${API_URL}/api/dashboard/suppliers?skip=${skip}&limit=${limit}`);
@@ -1687,7 +1692,7 @@ async function searchSuppliersFromAPI(query) {
     }
 }
 
-// Initialize dashboard - load suppliers from API
+// Initialize dashboard - DEPRECATED, use initializeFromServer() instead
 async function initializeDashboard() {
     console.log('⏳ Loading suppliers from', API_URL, '...');
     
@@ -3197,7 +3202,12 @@ function updateStats() {
         // Supplier Modal
         function openSupplierModal(supplierId) {
             const supplier = allSuppliers.find(s => s.id === supplierId);
-            if (!supplier) return;
+            if (!supplier) {
+                console.error('Supplier not found:', supplierId);
+                return;
+            }
+
+            console.log('Opening modal for:', supplier.name, supplier);
 
             document.getElementById('modalTitle').textContent = supplier.name;
             document.getElementById('modalSubtitle').textContent = supplier.category;
@@ -3207,35 +3217,35 @@ function updateStats() {
                 <div class="modal-section">
                     <h3>📋 About</h3>
                     <p class="description-text">${supplier.description}</p>
-                    ${supplier.walmartVerified ? '<div style="margin-top: 15px;"><span class="walmart-verified">✓ Walmart Verified Supplier</span></div>' : ''}
+                    ${supplier.verified ? '<div style="margin-top: 15px;"><span class="walmart-verified">✓ Verified Supplier</span></div>' : ''}
                 </div>
 
                 <div class="modal-section">
                     <h3>📊 Key Metrics</h3>
                     <div class="stat-cards">
                         <div class="stat-card">
-                            <div class="value">${supplier.aiScore}</div>
-                            <div class="label">AI Match Score</div>
-                        </div>
-                        <div class="stat-card">
                             <div class="value">⭐ ${supplier.rating}</div>
-                            <div class="label">Customer Rating</div>
+                            <div class="label">Rating (${supplier.reviews} reviews)</div>
                         </div>
                         <div class="stat-card">
-                            <div class="value">${supplier.yearsInBusiness}</div>
-                            <div class="label">Years in Business</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="value">${supplier.employees}</div>
-                            <div class="label">Employees</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="value">${supplier.projectsCompleted.toLocaleString()}</div>
-                            <div class="label">Projects Completed</div>
+                            <div class="value">${supplier.leadTime}</div>
+                            <div class="label">Lead Time</div>
                         </div>
                         <div class="stat-card">
                             <div class="value">${supplier.responseTime}</div>
-                            <div class="label">Avg Response Time</div>
+                            <div class="label">Response Time</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="value">${supplier.contractTerms}</div>
+                            <div class="label">Contract Terms</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="value">${supplier.stockLevel.toLocaleString()}</div>
+                            <div class="label">Stock Level</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="value">${supplier.minimumOrder}</div>
+                            <div class="label">Min Order</div>
                         </div>
                     </div>
                 </div>
@@ -3245,23 +3255,19 @@ function updateStats() {
                     <div class="info-grid">
                         <div class="info-item">
                             <div class="info-label">Location</div>
-                            <div class="info-value">📍 ${supplier.address}<br>${supplier.city}, ${supplier.region}</div>
+                            <div class="info-value">📍 ${supplier.location}</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">Company Size</div>
-                            <div class="info-value">${supplier.size}</div>
+                            <div class="info-label">Stock Status</div>
+                            <div class="info-value">${supplier.inStock ? '✅ In Stock' : '❌ Out of Stock'}</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">Price Range</div>
-                            <div class="info-value">${supplier.priceRange}</div>
+                            <div class="info-label">ID</div>
+                            <div class="info-value">${supplier.id}</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">Minimum Order</div>
-                            <div class="info-value">${supplier.minOrder}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Payment Terms</div>
-                            <div class="info-value">${supplier.paymentTerms}</div>
+                            <div class="info-label">Category</div>
+                            <div class="info-value">${supplier.category}</div>
                         </div>
                     </div>
                 </div>
@@ -3269,39 +3275,28 @@ function updateStats() {
                 <div class="modal-section">
                     <h3>📦 Products & Services</h3>
                     <div class="product-tags">
-                        ${supplier.products.map(p => `<span class="tag" onclick="filterByTag('${p.replace(/'/g, "\\'")}'); closeModal();" title="Click to filter by ${p}" style="cursor: pointer;">${p}</span>`).join('')}
+                        ${supplier.products.map(p => `<span class="tag" style="cursor: pointer;">${p}</span>`).join('')}
                     </div>
                 </div>
 
                 <div class="modal-section">
                     <h3>✅ Certifications</h3>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        ${supplier.certifications.map(c => `<span class="cert-badge">✓ ${c}</span>`).join('')}
+                        ${supplier.certifications && supplier.certifications.length > 0 ? supplier.certifications.map(c => `<span class="cert-badge">✓ ${c}</span>`).join('') : '<p style="color: #666;">No certifications listed</p>'}
                     </div>
                 </div>
 
                 <div class="modal-section">
-                    <h3>📞 Contact Information</h3>
-                    <div class="info-grid" style="margin-bottom: 15px;">
+                    <h3>⚙️ Additional Details</h3>
+                    <div class="info-grid">
                         <div class="info-item">
-                            <div class="info-label">Phone</div>
-                            <div class="info-value">${supplier.phone}</div>
+                            <div class="info-label">Last Updated</div>
+                            <div class="info-value">${new Date(supplier.lastUpdated).toLocaleDateString()}</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">Email</div>
-                            <div class="info-value">${supplier.email}</div>
+                            <div class="info-label">Last Stock Check</div>
+                            <div class="info-value">${new Date(supplier.lastStockCheck).toLocaleDateString()}</div>
                         </div>
-                    </div>
-                    <div class="contact-buttons">
-                        <a href="${supplier.website}" target="_blank" class="contact-btn primary">
-                            🌐 Visit Website
-                        </a>
-                        <a href="mailto:${supplier.email}" class="contact-btn secondary">
-                            ✉️ Send Email
-                        </a>
-                        <a href="tel:${supplier.phone.replace(/[^0-9]/g, '')}" class="contact-btn secondary">
-                            📱 Call Now
-                        </a>
                     </div>
                 </div>
             `;
@@ -3701,21 +3696,22 @@ function updateStats() {
             document.getElementById('spStatus').innerHTML = '💾 Local Mode';
         });
         
-        // Initialize dashboard - load suppliers from API
-        window.addEventListener('load', () => {
-            console.log('🚀 Dashboard initializing...');
-            initializeDashboard();
-        });
+        // DEPRECATED: Old initialization calls - no longer needed
+        // initializeFromServer() already handles everything above
+        // Commenting out to prevent conflicting initialization
         
-        // Also try to initialize immediately if DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeDashboard);
-        } else {
-            // DOM is already ready
-            setTimeout(initializeDashboard, 500);
-        }
+        // window.addEventListener('load', () => {
+        //     console.log('🚀 Dashboard initializing...');
+        //     initializeDashboard();
+        // });
         
-        console.log('Dashboard ready - waiting for supplier data from API');
+        // if (document.readyState === 'loading') {
+        //     document.addEventListener('DOMContentLoaded', initializeDashboard);
+        // } else {
+        //     setTimeout(initializeDashboard, 500);
+        // }
+        
+        console.log('✅ Dashboard ready - suppliers loaded from API');
     </script>
 </body>
 </html>
