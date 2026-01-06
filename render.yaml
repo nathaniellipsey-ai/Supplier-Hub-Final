@@ -10,12 +10,16 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: BACKEND_PORT
-        value: 3000
-      - key: DATA_SERVER_PORT
-        value: 3001
-      - key: FRONTEND_PORT
-        value: 3002
+      - key: HOST
+        value: 0.0.0.0
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: WS_ENABLED
+        value: "true"
+      - key: WS_UPDATE_INTERVAL
+        value: "10000"
     healthCheckPath: /health
     healthCheckInterval: 30
+    healthCheckTimeout: 10
     maxShutdownDelay: 30
+    autoDeploy: true

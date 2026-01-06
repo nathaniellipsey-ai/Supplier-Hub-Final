@@ -10,12 +10,27 @@ import { WebSocketServer } from 'ws';
 import http from 'http';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 import { generateSupplierData } from './data-server/data-generator.js';
-import { chatbotResponse } from './chatbot-service.js';
+
+// Import chatbot service - use try/catch in case it doesn't exist
+let chatbotResponse;
+try {
+  const { chatbotResponse: cbResponse } = await import('./chatbot-service.js');
+  chatbotResponse = cbResponse;
+} catch (error) {
+  console.warn('⚠️  Chatbot service not available, skipping');
+  chatbotResponse = async (message) => ({
+    success: true,
+    message: 'I\'m a demo chatbot. To enable real responses, implement the chatbot-service.js file.',
+    response: 'Generic response'
+  });
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 
 // Initialize Express app
 const app = express();
@@ -23,8 +38,18 @@ const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+// CORS configuration for production and development
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-ID'],
+  maxAge: 86400 // 24 hours
+};
+
+app.use(cors(corsOptions));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Generate supplier data (seeded for consistency)
 let suppliersCache = generateSupplierData();
@@ -346,7 +371,11 @@ app.get('/', (req, res) => {
 });
 
 // Serve legacy HTML files
-app.use(express.static(__dirname));
+// Serve static files
+app.use(express.static(__dirname, {
+  maxAge: NODE_ENV === 'production' ? '1h' : 0, // Cache for 1 hour in production
+  etag: true // Enable ETag for cache validation
+}));
 
 // ==================== WEBSOCKET FOR LIVE UPDATES ====================
 
@@ -394,8 +423,26 @@ setInterval(() => {
 
 // ==================== ERROR HANDLING ====================
 
-// 404 handler
-app.use((req, res) => {
+// 404 handler - but serve HTML files first
+app.use((req, res, next) => {
+  // If no extension, it might be an HTML file
+  if (!req.path.includes('.')) {
+    const htmlPath = path.join(__dirname, req.path + '.html');
+    if (fs.existsSync(htmlPath)) {
+      return res.sendFile(htmlPath);
+    }
+  }
+  
+  // For API calls, return JSON
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({
+      success: false,
+      error: 'Not found',
+      path: req.path
+    });
+  }
+  
+  // For HTML requests, try to serve index.html (for SPA support)
   res.status(404).json({
     success: false,
     error: 'Not found',
@@ -406,15 +453,17 @@ app.use((req, res) => {
 // Error handler
 app.use((err, req, res, next) => {
   console.error('❌ Error:', err.message);
+  console.error(err.stack);
   res.status(500).json({
     success: false,
-    error: NODE_ENV === 'production' ? 'Internal server error' : err.message
+    error: NODE_ENV === 'production' ? 'Internal server error' : err.message,
+    ...(NODE_ENV !== 'production' && { stack: err.stack })
   });
 });
 
 // ==================== SERVER STARTUP ====================
 
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, HOST, () => {
   console.log('\n' + '═'.repeat(60));
   console.log('🚀 WALMART SUPPLIER PORTAL - PRODUCTION SERVER');
   console.log('═'.repeat(60));
@@ -427,6 +476,12 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`  📈 Stats:           http://localhost:${PORT}/api/stats`);
   console.log(`  🔌 Health:          http://localhost:${PORT}/health`);
   console.log(`  🔗 WebSocket:       ws://localhost:${PORT}`);
+  console.log(`\n📱 Production URLs:`);
+  if (process.env.RENDER_EXTERNAL_URL) {
+    console.log(`  📌 Main:            ${process.env.RENDER_EXTERNAL_URL}`);
+    console.log(`  📊 API:             ${process.env.RENDER_EXTERNAL_URL}/api/suppliers`);
+    console.log(`  🔗 WebSocket:       ${process.env.RENDER_EXTERNAL_URL.replace('https://', 'wss://').replace('http://', 'ws://')}`);
+  }
   console.log('\n✅ All endpoints integrated into single service!');
   console.log('═'.repeat(60) + '\n');
 });

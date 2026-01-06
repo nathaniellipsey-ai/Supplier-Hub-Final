@@ -1636,7 +1636,7 @@ Created with ❤️ by Code Puppy 🐶
     <script>
 
 // API URL - point to the backend API server
-const API_URL = 'http://localhost:3000';
+const API_URL = window.location.origin; // Uses current domain (works on localhost and production)
 let USE_API = true; // Set to true to use API instead of local generation
 let allSuppliers = []; // Initialize empty array, will be filled from API
 let filteredSuppliers = []; // Filtered results
