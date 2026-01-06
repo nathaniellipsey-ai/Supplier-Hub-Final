@@ -1643,6 +1643,9 @@ let filteredSuppliers = []; // Filtered results
 let currentPage = 1;
 const itemsPerPage = 12;
 let currentView = 'grid'; // or 'catalog'
+let compareList = []; // List of supplier IDs selected for comparison
+let compareMode = false; // Whether we're in compare mode
+let favoritesList = []; // List of favorite supplier IDs
 
 // Function to load suppliers from API
 async function loadSuppliersFromAPI(skip = 0, limit = 5000) {
@@ -2399,8 +2402,8 @@ function updateStats() {
                 initializeFromServer();
             }
         });
-        let currentPage = 1;
-        const itemsPerPage = 20;
+        // NOTE: currentPage and itemsPerPage already declared at line 1643
+        // Do NOT redeclare - just use the existing variables
 
         // Toggle filter section collapse
         function toggleFilterSection(sectionId) {
@@ -2517,9 +2520,8 @@ function updateStats() {
             }, 3000);
         }
 
-        let compareMode = false;
-        let compareList = [];
-        let currentView = 'list'; // list, grid, or catalog
+        // NOTE: compareMode, compareList, and currentView already declared in main variables section
+        // No need to redeclare them here!
         
         function toggleCompareMode() {
             if (compareList.length < 2) {
