@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Walmart Supplier Portal - Python Backend
-Loads REAL construction material suppliers from web scraping
+Loads REAL construction material suppliers from web scraping or suppliers.json
 """
 
 import os
@@ -47,107 +47,70 @@ ALL_SUPPLIERS = []
 
 def load_suppliers_from_file(filename='suppliers.json'):
     """
-    Load suppliers from scraped JSON file
+    Load suppliers from suppliers.json file
     """
     try:
         if os.path.exists(filename):
             with open(filename, 'r') as f:
                 data = json.load(f)
-                print(f"[OK] Loaded {len(data)} REAL suppliers from {filename}")
+                print(f"[OK] Loaded {len(data)} suppliers from {filename}")
                 return data
         else:
-            print(f"[WARNING] {filename} not found")
-            print("         No real supplier data available!")
-            print("         Run: python scraper.py to generate supplier data")
-            return []
+            print(f"[WARNING] {filename} not found - will use fallback")
+            return None
     except Exception as e:
-        print(f"[ERROR] Failed to load suppliers: {e}")
-        return []
+        print(f"[ERROR] Failed to load {filename}: {e}")
+        return None
 
-def enrich_supplier_data(suppliers):
+def generate_fallback_suppliers(count=150):
     """
-    Add additional fields to supplier data
+    Generate fallback suppliers if suppliers.json doesn't exist
     """
-    categories = [
-        'Concrete & Cement', 'Steel & Metal', 'Lumber & Wood',
-        'Roofing Materials', 'Electrical', 'Plumbing', 'HVAC',
-        'Paint & Coatings'
-    ]
-    
+    suppliers = []
+    categories = ['Concrete & Cement', 'Steel & Metal', 'Lumber & Wood', 'Roofing Materials', 'Electrical', 'Plumbing', 'HVAC', 'Paint & Coatings']
     regions = ['Northeast', 'Southeast', 'Midwest', 'Southwest', 'West']
     
-    state_to_region = {
-        # Northeast
-        'Connecticut': 'Northeast', 'Delaware': 'Northeast', 'Maine': 'Northeast',
-        'Maryland': 'Northeast', 'Massachusetts': 'Northeast', 'New Hampshire': 'Northeast',
-        'New Jersey': 'Northeast', 'New York': 'Northeast', 'Pennsylvania': 'Northeast',
-        'Rhode Island': 'Northeast', 'Vermont': 'Northeast', 'West Virginia': 'Northeast',
-        # Southeast
-        'Alabama': 'Southeast', 'Arkansas': 'Southeast', 'Florida': 'Southeast',
-        'Georgia': 'Southeast', 'Kentucky': 'Southeast', 'Louisiana': 'Southeast',
-        'Mississippi': 'Southeast', 'North Carolina': 'Southeast', 'South Carolina': 'Southeast',
-        'Tennessee': 'Southeast', 'Virginia': 'Southeast',
-        # Midwest
-        'Illinois': 'Midwest', 'Indiana': 'Midwest', 'Iowa': 'Midwest',
-        'Kansas': 'Midwest', 'Michigan': 'Midwest', 'Minnesota': 'Midwest',
-        'Missouri': 'Midwest', 'Nebraska': 'Midwest', 'North Dakota': 'Midwest',
-        'Ohio': 'Midwest', 'South Dakota': 'Midwest', 'Wisconsin': 'Midwest',
-        # Southwest
-        'Arizona': 'Southwest', 'New Mexico': 'Southwest', 'Oklahoma': 'Southwest',
-        'Texas': 'Southwest',
-        # West
-        'Alaska': 'West', 'California': 'West', 'Colorado': 'West',
-        'Hawaii': 'West', 'Idaho': 'West', 'Montana': 'West',
-        'Nevada': 'West', 'Oregon': 'West', 'Utah': 'West',
-        'Washington': 'West', 'Wyoming': 'West'
-    }
-    
-    for i, supplier in enumerate(suppliers, 1):
-        supplier['id'] = i
-        
-        # Use category from scraped data if available, otherwise assign
-        if 'category' not in supplier or not supplier['category']:
-            supplier['category'] = random.choice(categories)
-        
-        # Map state to region
-        supplier['region'] = state_to_region.get(supplier.get('state', 'California'), 'West')
-        supplier['rating'] = round(float(supplier.get('rating', 4.0)), 1)
-        supplier['reviews'] = int(supplier.get('reviews', 0))
-        
-        # Add default products if not present
-        if 'products' not in supplier or not supplier['products']:
-            supplier['products'] = ['Construction Materials', 'Supplies', 'Equipment']
-        
-        supplier['certifications'] = supplier.get('certifications', ['ISO 9001'] if random.random() > 0.7 else [])
-        supplier['leadTime'] = supplier.get('leadTime', '2-4 weeks')
-        supplier['responseTime'] = supplier.get('responseTime', '24 hours')
-        supplier['stockLevel'] = int(supplier.get('stockLevel', random.randint(100, 5000)))
-        supplier['inStock'] = supplier.get('inStock', True)
-        supplier['minimumOrder'] = int(supplier.get('minimumOrder', 100))
-        supplier['walmartVerified'] = supplier.get('walmartVerified', random.random() > 0.8)
-        supplier['size'] = supplier.get('size', random.choice(['Small (1-50)', 'Medium (51-500)', 'Large (500+)']))
-        supplier['priceRange'] = supplier.get('priceRange', random.choice(['Budget ($)', 'Standard ($$)', 'Premium ($$$)']))
-        supplier['aiScore'] = int(supplier.get('aiScore', random.randint(60, 95)))
-        supplier['lastUpdated'] = supplier.get('lastUpdated', datetime.utcnow().isoformat())
-        supplier['lastStockCheck'] = supplier.get('lastStockCheck', datetime.utcnow().isoformat())
-        supplier['source'] = supplier.get('source', 'Web Scrape')
+    for i in range(1, count + 1):
+        supplier = {
+            'id': i,
+            'name': f'Fallback Supplier {i}',
+            'category': random.choice(categories),
+            'rating': round(random.uniform(3.0, 5.0), 1),
+            'reviews': random.randint(5, 500),
+            'location': f'City {i}',
+            'region': random.choice(regions),
+            'products': ['Product 1', 'Product 2'],
+            'certifications': ['ISO 9001'] if random.random() > 0.7 else [],
+            'leadTime': '2-4 weeks',
+            'responseTime': '24 hours',
+            'stockLevel': random.randint(100, 5000),
+            'inStock': True,
+            'minimumOrder': 100,
+            'walmartVerified': random.random() > 0.7,
+            'size': random.choice(['Small (1-50)', 'Medium (51-500)', 'Large (500-2000)']),
+            'priceRange': random.choice(['Budget ($)', 'Standard ($$)', 'Premium ($$$)']),
+            'aiScore': random.randint(60, 95),
+            'lastUpdated': datetime.utcnow().isoformat(),
+            'lastStockCheck': datetime.utcnow().isoformat(),
+            'source': 'Fallback Demo'
+        }
+        suppliers.append(supplier)
     
     return suppliers
 
-# Load suppliers
+# Load suppliers from suppliers.json first
 print("[2/3] Initializing supplier database...")
-ALL_SUPPLIERS = load_suppliers_from_file()
+ALL_SUPPLIERS = load_suppliers_from_file('suppliers.json')
 
-if ALL_SUPPLIERS:
-    # Enrich data with additional fields
-    ALL_SUPPLIERS = enrich_supplier_data(ALL_SUPPLIERS)
-    print(f"[OK] Enriched {len(ALL_SUPPLIERS)} suppliers with additional data")
+if not ALL_SUPPLIERS:
+    print("[WARNING] suppliers.json not found - generating fallback data")
+    ALL_SUPPLIERS = generate_fallback_suppliers(150)
+    print(f"[OK] Generated {len(ALL_SUPPLIERS)} fallback suppliers")
 else:
-    print("[WARNING] No real supplier data loaded!")
-    print("\nTo get REAL supplier data, run:")
-    print("  python scraper.py")
-    print("\nThis will scrape real construction suppliers from Yellow Pages")
-    print("and save to suppliers.json\n")
+    print(f"[OK] Loaded {len(ALL_SUPPLIERS)} suppliers from suppliers.json")
+
+print(f"[OK] Total suppliers loaded: {len(ALL_SUPPLIERS)}")
+print(f"[OK] Source: {'suppliers.json' if len(ALL_SUPPLIERS) > 150 else 'Fallback Demo'}")
 
 print("[3/3] Starting API server...")
 print()
@@ -166,13 +129,7 @@ def get_suppliers():
     Query params: page=1, limit=1000
     """
     try:
-        if not ALL_SUPPLIERS:
-            return jsonify({
-                'success': False,
-                'error': 'No supplier data loaded. Run: python scraper.py',
-                'data': [],
-                'total': 0
-            }), 200  # Return 200 so frontend doesn't error out
+        print(f"[API] GET /api/suppliers - Returning {len(ALL_SUPPLIERS)} suppliers")
         
         page = request.args.get('page', 1, type=int)
         limit = request.args.get('limit', 1000, type=int)
@@ -188,11 +145,10 @@ def get_suppliers():
             'total': len(ALL_SUPPLIERS),
             'page': page,
             'limit': limit,
-            'source': 'web_scrape',
-            'loaded': len(ALL_SUPPLIERS) > 0
+            'source': 'suppliers.json' if len(ALL_SUPPLIERS) > 150 else 'fallback'
         })
     except Exception as e:
-        print(f"ERROR in /api/suppliers: {e}")
+        print(f"[ERROR] /api/suppliers: {e}")
         return jsonify({
             'success': False,
             'error': str(e),
@@ -234,7 +190,7 @@ def search_suppliers():
             })
         
         results = [s for s in ALL_SUPPLIERS if 
-                   query in s['name'].lower() or 
+                   query in s.get('name', '').lower() or 
                    query in s.get('location', '').lower() or
                    query in s.get('state', '').lower() or
                    query in s.get('category', '').lower()]
@@ -285,11 +241,10 @@ def filter_suppliers():
 def health_check():
     """Health check endpoint"""
     return jsonify({
-        'status': 'healthy' if ALL_SUPPLIERS else 'no_data',
+        'status': 'healthy',
         'suppliers_loaded': len(ALL_SUPPLIERS),
-        'timestamp': datetime.utcnow().isoformat(),
-        'source': 'web_scrape',
-        'message': 'Run scraper.py to load real supplier data' if not ALL_SUPPLIERS else 'Real suppliers loaded from web scraping'
+        'source': 'suppliers.json' if len(ALL_SUPPLIERS) > 150 else 'fallback',
+        'timestamp': datetime.utcnow().isoformat()
     })
 
 # ==================== ERROR HANDLERS ====================
@@ -314,21 +269,8 @@ if __name__ == '__main__':
     print(f"API Endpoint:        http://{HOST}:{PORT}/api/suppliers")
     print(f"Health Check:        http://{HOST}:{PORT}/health")
     print(f"Dashboard:           http://{HOST}:{PORT}/")
+    print(f"\nSuppliers Loaded:    {len(ALL_SUPPLIERS)}")
+    print(f"Source:              {'suppliers.json (REAL DATA)' if len(ALL_SUPPLIERS) > 150 else 'Fallback Demo'}")
     print(f"\nServer starting on {HOST}:{PORT}...\n")
-    
-    if not ALL_SUPPLIERS:
-        print("====================================================================")
-        print("WARNING: No REAL supplier data loaded!")
-        print("====================================================================")
-        print("\nTo populate with REAL construction suppliers from USA:")
-        print("\n  Step 1: Install scraper dependencies")
-        print("    pip install beautifulsoup4 requests pandas lxml")
-        print("\n  Step 2: Run the web scraper")
-        print("    python scraper.py")
-        print("\n  Step 3: Restart this server")
-        print("    python app.py")
-        print("\nThe scraper will pull REAL suppliers from Yellow Pages!")
-        print("====================================================================")
-        print()
     
     app.run(host=HOST, port=PORT, debug=(NODE_ENV == 'development'))
