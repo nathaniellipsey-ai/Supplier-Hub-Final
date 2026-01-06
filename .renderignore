@@ -1,19 +1,51 @@
-# Ignore Python files to prevent Render from detecting Python
+# === CRITICAL: Prevent Python Detection ===
+# Delete these files from clone to prevent Python runtime detection
+
+# Python files (MUST HIDE THESE!)
 *.py
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Python package/dependency files
 requirements.txt
 setup.py
+setup.cfg
 pyproject.toml
 Poetry.lock
 Pipfile
+Pipfile.lock
+Tox.ini
 
-# Ignore documentation and reference files
+# Render legacy files
+Procfile
+runtime.txt
+
+# Legacy/Documentation (optional but helps reduce size)
+legacy_python/
 *.md
 *.txt
 .env.example
+docs/
 
-# Ignore node modules locally if present
+# Node modules (build will install fresh)
 node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Build artifacts
+build/
+dist/
+.next/
+out/
+
+# Cache
+.cache/
 .npm/
 .yarn/

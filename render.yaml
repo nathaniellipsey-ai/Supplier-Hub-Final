@@ -3,13 +3,15 @@ services:
     name: supplier-portal
     runtime: node
     node:
-      version: 18
+      version: 18.19.0
     plan: free
-    buildCommand: npm install
+    buildCommand: npm install --production
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 3000
       - key: HOST
         value: 0.0.0.0
       - key: CORS_ORIGIN
@@ -23,3 +25,4 @@ services:
     healthCheckTimeout: 10
     maxShutdownDelay: 30
     autoDeploy: true
+    preDeployCommand: npm install
