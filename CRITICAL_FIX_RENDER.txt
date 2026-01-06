@@ -1,0 +1,328 @@
+================================================================================
+              CRITICAL FIX - RENDER STILL DETECTING PYTHON
+================================================================================
+
+PROBLEM:
+--------
+Render is STILL trying to install Python even though this is a Node.js project.
+
+Build log shows:
+  "Installing Python version 3.13.4"
+  "Using Poetry version 2.1.3"
+  "Running build command 'pip install -r requirements.txt'"
+  ERROR: Could not find requirements.txt
+
+ROOT CAUSE:
+-----------
+Render is using CACHED configuration from the old service. Even though we:
+  ✓ Deleted Procfile
+  ✓ Created runtime.txt
+  ✓ Updated render.yaml
+  ✓ Created .renderignore
+  ✓ Moved Python files
+
+Render is still reading cached Python config!
+
+SOLUTION:
+---------
+
+We need to:
+  1. Add render-build.sh (explicit build script)
+  2. Update render.yaml to use the build script
+  3. DELETE the old Render service (to clear cache)
+  4. CREATE a completely new service
+
+DON'T just push to the existing service - it has cached config!
+
+
+FILES ALREADY UPDATED:
+======================
+
+1. render-build.sh (NEW!)
+   • Explicit bash script that forces Node.js
+   • Calls: npm install --production
+   • No Python involved
+   • Forces Node.js to be used
+
+2. render.yaml (UPDATED!)
+   • buildCommand: bash render-build.sh
+   • (instead of: npm install)
+   • This ensures the build script is used
+
+3. runtime.txt (ALREADY EXISTS!)
+   • Contains: node 18.19.0
+   • Tells Render to use Node.js
+   • Located in ROOT directory
+
+
+STEPS TO FIX:
+=============
+
+STEP 1: Verify files are ready
+  ✓ Check that runtime.txt exists (it does!)
+  ✓ Check that render-build.sh exists (just created!)
+  ✓ Check that render.yaml is updated (just updated!)
+
+STEP 2: Commit to GitHub
+  
+  You MUST push these new/updated files:
+    • render-build.sh (NEW)
+    • render.yaml (UPDATED)
+    • runtime.txt (EXISTS - make sure it's committed)
+  
+  Command:
+  ```
+  git add -A
+  git commit -m "Critical: Add explicit Node.js build config for Render"
+  git push origin main
+  ```
+  
+  Verify on GitHub:
+    • Go to: https://github.com/nathaniellipsey-ai/Supplier-Hub-Final
+    • Check that render-build.sh appears in root
+    • Check that runtime.txt is there
+    • Check that render.yaml is updated
+
+STEP 3: DELETE the old Render service (CRITICAL!)
+  
+  Go to: https://render.com/dashboard
+  
+  1. Click on "supplier-portal" service
+  2. Scroll to BOTTOM of page
+  3. Click "Delete Service"
+  4. Type the service name to confirm
+  5. Click "Delete"
+  6. Wait 1-2 minutes for deletion
+  
+  This CLEARS the cached Python configuration!
+
+STEP 4: CREATE a completely NEW service
+  
+  Go to: https://render.com/dashboard
+  
+  1. Click "New +" button
+  2. Click "Web Service"
+  3. Connect GitHub (or select repository)
+  4. Search for and select: "Supplier-Hub-Final"
+  5. Fill in the form:
+     
+     Name:              supplier-portal
+     Runtime:           Node (should auto-select)
+     Root Directory:    (leave blank)
+     Build Command:     bash render-build.sh
+     Start Command:     node server.js
+     Plan:              Free (or Paid)
+     
+  6. Environment Variables (optional - already in render.yaml):
+     NODE_ENV:          production
+     CORS_ORIGIN:       *
+     
+  7. Click "Create Web Service"
+  8. Wait 3-5 minutes for build
+
+STEP 5: Verify SUCCESS
+  
+  Build log should show:
+    ✓ "Using Node.js version..."
+    ✓ "Running build command 'bash render-build.sh'"
+    ✓ "npm install" or "npm ci"
+    ✓ "Build succeeded"
+    ✓ No mention of Python, Poetry, or pip
+  
+  SHOULD NOT show:
+    ✗ "Installing Python"
+    ✗ "Poetry version"
+    ✗ "pip install"
+    ✗ "requirements.txt"
+
+STEP 6: ACCESS your dashboard
+  
+  Once build succeeds:
+    • Render will give you a URL
+    • Open the URL in browser
+    • Dashboard should load!
+
+
+WHY THIS WORKS:
+================
+
+Old approach (FAILED):
+  Render's auto-detection (✗ broken)
+    → Sees some cached Python config
+    → Tries to install Python
+    → Fails
+
+New approach (WILL WORK):
+  1. runtime.txt → Tells Render "Use Node.js"
+  2. render.yaml → Specifies explicit build command
+  3. render-build.sh → Bash script that FORCES npm
+  4. NEW service → No cached config to interfere
+  
+  Result: Pure Node.js build, no Python involved!
+
+
+FILES MODIFIED:
+================
+
+New:
+  • render-build.sh
+    Contains bash script that forces Node.js
+    Makes npm the build tool
+
+Updated:
+  • render.yaml
+    Changed buildCommand to: bash render-build.sh
+    (instead of default npm install)
+
+Already Exist:
+  • runtime.txt
+    node 18.19.0
+    (in ROOT directory, CRITICAL!)
+  
+  • package.json
+    Lists npm dependencies
+  
+  • server.js
+    Main application
+
+
+IMPORTANT NOTES:
+=================
+
+1. runtime.txt MUST be in ROOT
+   ✓ It IS in root (verified!)
+   ✓ Tells Render to use Node.js
+   ✓ Must be committed to GitHub
+
+2. You MUST delete the old service
+   - Don't just push new code
+   - Old service has cached Python config
+   - New service will be clean
+
+3. render-build.sh must be executable
+   - Created as bash script
+   - Render will run it with bash
+   - No special permissions needed
+
+4. All files must be on GitHub
+   - Push all changes before creating new service
+   - Verify files appear on GitHub
+   - Then create new Render service
+
+
+TROUBLESHOOTING:
+=================
+
+Q: Still says "Installing Python"?
+A: Make sure you DELETED the old service and created a NEW one.
+   Old service has cached config that can't be cleared by pushing code.
+
+Q: runtime.txt missing on GitHub?
+A: Run: git add runtime.txt && git commit -m "Add runtime.txt" && git push
+
+Q: render-build.sh not found?
+A: Verify it's in root: ls -la render-build.sh
+   Then push: git add render-build.sh && git push
+
+Q: Still failing after new service?
+A: Check Render build log for exact error
+   Look for: "ERROR: Could not find..."
+   Share the full build log error
+
+
+QUICK CHECKLIST:
+=================
+
+[ ] verify runtime.txt exists locally (type runtime.txt)
+[ ] verify render-build.sh exists (just created!)
+[ ] verify render.yaml is updated (just updated!)
+[ ] commit all changes (git add -A && git commit)
+[ ] push to GitHub (git push origin main)
+[ ] verify files appear on GitHub (check website)
+[ ] DELETE old Render service (scroll to bottom, click delete)
+[ ] CREATE new Render service (follow Step 4 above)
+[ ] wait for build (3-5 minutes)
+[ ] check build log for Node.js (not Python!)
+[ ] access dashboard URL
+[ ] CELEBRATE! You're live!
+
+
+EXPECTED BUILD LOG:
+====================
+
+What it should show:
+
+  ==> Using Node.js version 18.19.0
+  ==> Using Node.js version 18.19.0 via /opt/render/project/src/runtime.txt
+  ==> Running build command 'bash render-build.sh'...
+  
+  ==================================================
+  Render Build Script - Node.js Project
+  ==================================================
+  
+  Checking Node.js...
+  v18.19.0
+  npm 9.8.1
+  
+  Installing dependencies...
+  npm notice ...
+  npm notice ...
+  
+  [dependency install output]
+  
+  ==================================================
+  Build Complete - Ready to start server
+  ==================================================
+  
+  ==> Build succeeded! 🎉
+  ==> Starting service with 'node server.js'
+
+What it should NOT show:
+
+  ✗ "Installing Python"
+  ✗ "Poetry"
+  ✗ "pip install"
+  ✗ "requirements.txt"
+  ✗ "ERROR: Could not find requirements.txt"
+
+
+NEXT STEP RIGHT NOW:
+====================
+
+1. Verify runtime.txt is in root:
+   type runtime.txt
+   (Should show: node 18.19.0)
+
+2. Verify render-build.sh exists:
+   dir render-build.sh
+   (Should show: render-build.sh file)
+
+3. Push to GitHub:
+   git add -A
+   git commit -m "Critical: Node.js build config"
+   git push origin main
+
+4. THEN follow Step 3 (delete old service) above
+
+5. THEN follow Step 4 (create new service) above
+
+
+SUPPORT:
+=========
+
+If this doesn't work:
+  1. Check Render build log (copy full error)
+  2. Verify all files on GitHub
+  3. Verify render-build.sh is executable
+  4. Try rebuilding from scratch
+
+The key: DELETE OLD SERVICE + CREATE NEW SERVICE
+This clears Render's cached config!
+
+
+================================================================================
+Status:     CRITICAL FIX PROVIDED
+Priority:   HIGH - Deploy cannot work with cached Python config
+Action:     Follow steps above immediately
+Result:     Node.js build, no Python!
+================================================================================

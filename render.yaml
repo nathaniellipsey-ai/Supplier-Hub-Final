@@ -5,7 +5,7 @@ services:
     node:
       version: 18.19.0
     plan: free
-    buildCommand: npm install --production
+    buildCommand: bash render-build.sh
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
@@ -25,4 +25,3 @@ services:
     healthCheckTimeout: 10
     maxShutdownDelay: 30
     autoDeploy: true
-    preDeployCommand: npm install
