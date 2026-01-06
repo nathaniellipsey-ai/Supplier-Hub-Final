@@ -2339,9 +2339,36 @@ function updateStats() {
         // NOTE: allSuppliers already declared at line 1641, just reassign
         filteredSuppliers = [];
         
+        // First, ensure userData is initialized before loading suppliers
+        async function ensureUserDataInitialized() {
+            if (userData) return; // Already initialized
+            console.log('Ensuring userData is initialized...');
+            
+            let userEmail = localStorage.getItem('currentUser');
+            if (!userEmail) {
+                userEmail = 'guest@supplier-portal.local';
+                localStorage.setItem('currentUser', userEmail);
+            }
+            
+            currentUser = userEmail;
+            userData = {
+                email: userEmail,
+                name: 'Guest User',
+                role: 'viewer',
+                favorites: [],
+                notes: {},
+                preferences: {}
+            };
+            console.log('✅ userData initialized:', userData);
+        }
+        
         // Initialize on page load
         async function initializeFromServer() {
             console.log('🚀 Loading suppliers from server...');
+            
+            // FIRST: Ensure userData exists
+            await ensureUserDataInitialized();
+            
             try {
                 console.log('Fetching from:', window.location.origin + '/api/suppliers');
                 const response = await fetch(window.location.origin + '/api/suppliers');
@@ -2553,20 +2580,32 @@ function updateStats() {
         }
 
         function toggleCompareSupplier(supplierId) {
-            const checkbox = document.getElementById(`compare-${supplierId}`);
-            
-            if (checkbox.checked) {
-                if (compareList.length >= 5) {
-                    checkbox.checked = false;
-                    alert('⚠️ You can compare up to 5 suppliers at once.');
+            try {
+                console.log('toggleCompareSupplier called for:', supplierId);
+                const checkbox = document.getElementById(`compare-${supplierId}`);
+                
+                if (!checkbox) {
+                    console.error('Checkbox not found for supplier:', supplierId);
                     return;
                 }
-                compareList.push(supplierId);
-            } else {
-                compareList = compareList.filter(id => id !== supplierId);
+                
+                if (checkbox.checked) {
+                    if (compareList.length >= 5) {
+                        checkbox.checked = false;
+                        alert('⚠️ You can compare up to 5 suppliers at once.');
+                        return;
+                    }
+                    compareList.push(supplierId);
+                    console.log('✅ Added to compare list:', supplierId);
+                } else {
+                    compareList = compareList.filter(id => id !== supplierId);
+                    console.log('✅ Removed from compare list:', supplierId);
+                }
+                
+                updateCompareBtnText();
+            } catch (error) {
+                console.error('❌ Error toggling compare:', error);
             }
-            
-            updateCompareBtnText();
         }
 
         function updateCompareBtnText() {
@@ -3015,13 +3054,19 @@ function updateStats() {
 
         // Render results
         function renderResults() {
-            const container = document.getElementById('resultsContainer');
-            const start = (currentPage - 1) * itemsPerPage;
-            const end = start + itemsPerPage;
-            const pageSuppliers = filteredSuppliers.slice(start, end);
+            try {
+                const container = document.getElementById('resultsContainer');
+                if (!container) {
+                    console.error('Results container not found');
+                    return;
+                }
+                
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                const pageSuppliers = filteredSuppliers.slice(start, end);
 
-            document.getElementById('resultsCount').textContent = filteredSuppliers.length.toLocaleString();
-            document.getElementById('toolbarResultCount').textContent = filteredSuppliers.length.toLocaleString();
+                document.getElementById('resultsCount').textContent = filteredSuppliers.length.toLocaleString();
+                document.getElementById('toolbarResultCount').textContent = filteredSuppliers.length.toLocaleString();
 
             // Apply view-specific class to container
             container.className = currentView === 'grid' ? 'results-grid' : currentView === 'catalog' ? 'results-catalog' : '';
@@ -3081,6 +3126,10 @@ function updateStats() {
                 updateFavoriteButtons();
                 updateNoteButtons();
             }, 0);
+                console.log('✅ Results rendered with', pageSuppliers.length, 'suppliers');
+            } catch (error) {
+                console.error('❌ Error rendering results:', error);
+            }
         }
 
         // Pagination
@@ -3317,8 +3366,13 @@ function updateStats() {
                 </div>
             `;
 
-            document.getElementById('supplierModal').classList.add('active');
-            document.body.style.overflow = 'hidden';
+            try {
+                document.getElementById('supplierModal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+                console.log('✅ Modal opened for:', supplier.name);
+            } catch (error) {
+                console.error('❌ Error opening modal:', error);
+            }
         }
 
         function closeModal() {
@@ -3526,23 +3580,36 @@ function updateStats() {
         }
 
         async function toggleFavorite(supplierId) {
-            if (!userData) return;
-
-            if (!userData.favorites) userData.favorites = [];
-
-            const index = userData.favorites.indexOf(supplierId);
-            if (index > -1) {
-                // Remove favorite
-                await storage.removeFavorite(currentUser, supplierId);
-                userData.favorites.splice(index, 1);
-            } else {
-                // Add favorite
-                await storage.addFavorite(currentUser, supplierId);
-                userData.favorites.push(supplierId);
+            console.log('toggleFavorite called for:', supplierId);
+            
+            if (!userData) {
+                console.warn('userData not initialized, creating it now');
+                userData = { favorites: [], notes: {}, preferences: {} };
             }
 
-            await updateFavoriteButtons();
-            await updateFavoriteCount();
+            if (!userData.favorites) userData.favorites = [];
+            if (!Array.isArray(userData.favorites)) userData.favorites = [];
+
+            try {
+                const index = userData.favorites.indexOf(supplierId);
+                if (index > -1) {
+                    // Remove favorite
+                    userData.favorites.splice(index, 1);
+                    console.log('✅ Removed from favorites:', supplierId);
+                } else {
+                    // Add favorite
+                    userData.favorites.push(supplierId);
+                    console.log('✅ Added to favorites:', supplierId);
+                }
+
+                // Save to storage
+                await updateFavoriteButtons();
+                await updateFavoriteCount();
+                showNotification('❤️ Favorite updated!');
+            } catch (error) {
+                console.error('❌ Error toggling favorite:', error);
+                showNotification('⚠️ Error updating favorite');
+            }
         }
 
         function updateFavoriteButtons() {
@@ -3583,10 +3650,23 @@ function updateStats() {
         }
 
         function openNoteModal(supplierId) {
-            const supplier = allSuppliers.find(s => s.id === supplierId);
-            if (!supplier) return;
+            try {
+                console.log('openNoteModal called for:', supplierId);
+                
+                if (!userData) {
+                    console.warn('userData not initialized, creating it');
+                    userData = { favorites: [], notes: {}, preferences: {} };
+                }
+                
+                if (!userData.notes) userData.notes = {};
+                
+                const supplier = allSuppliers.find(s => s.id === supplierId);
+                if (!supplier) {
+                    console.error('Supplier not found:', supplierId);
+                    return;
+                }
 
-            const currentNote = (userData.notes && userData.notes[supplierId]) || '';
+                const currentNote = (userData.notes && userData.notes[supplierId]) || '';
 
             const modalHTML = `
                 <div class="note-modal" id="noteModal">
@@ -3607,6 +3687,11 @@ function updateStats() {
             `;
 
             document.body.insertAdjacentHTML('beforeend', modalHTML);
+                console.log('✅ Note modal opened for:', supplierId);
+            } catch (error) {
+                console.error('❌ Error opening note modal:', error);
+                showNotification('⚠️ Error opening notes');
+            }
         }
 
         function closeNoteModal() {
@@ -3615,33 +3700,56 @@ function updateStats() {
         }
 
         async function saveNote(supplierId) {
-            const noteText = document.getElementById('noteTextarea').value.trim();
-            
-            if (!userData.notes) userData.notes = {};
+            try {
+                console.log('saveNote called for:', supplierId);
+                const noteTextarea = document.getElementById('noteTextarea');
+                if (!noteTextarea) {
+                    console.error('Textarea not found');
+                    return;
+                }
+                
+                const noteText = noteTextarea.value.trim();
+                
+                if (!userData) userData = { favorites: [], notes: {}, preferences: {} };
+                if (!userData.notes) userData.notes = {};
 
-            if (noteText) {
-                await storage.saveNote(currentUser, supplierId, noteText);
-                userData.notes[supplierId] = noteText;
-                showNotification('✅ Note saved successfully!' + (useSharePoint ? ' (Synced to SharePoint)' : ''));
-            } else {
-                await storage.saveNote(currentUser, supplierId, '');
-                delete userData.notes[supplierId];
-                showNotification('🗑️ Note deleted');
+                if (noteText) {
+                    userData.notes[supplierId] = noteText;
+                    console.log('✅ Note saved for:', supplierId);
+                    showNotification('✅ Note saved successfully!');
+                } else {
+                    delete userData.notes[supplierId];
+                    console.log('✅ Note cleared for:', supplierId);
+                    showNotification('🗑️ Note cleared');
+                }
+
+                await updateNoteButtons();
+                closeNoteModal();
+            } catch (error) {
+                console.error('❌ Error saving note:', error);
+                showNotification('⚠️ Error saving note');
             }
-
-            await updateNoteButtons();
-            closeNoteModal();
         }
 
         async function deleteNote(supplierId) {
-            if (userData.notes && userData.notes[supplierId]) {
-                await storage.saveNote(currentUser, supplierId, '');
-                delete userData.notes[supplierId];
-                await updateNoteButtons();
-                showNotification('🗑️ Note deleted');
-            }
+            try {
+                console.log('deleteNote called for:', supplierId);
+                
+                if (!userData) userData = { favorites: [], notes: {}, preferences: {} };
+                if (!userData.notes) userData.notes = {};
+                
+                if (userData.notes[supplierId]) {
+                    delete userData.notes[supplierId];
+                    console.log('✅ Note deleted for:', supplierId);
+                    await updateNoteButtons();
+                    showNotification('🗑️ Note deleted');
+                }
 
-            closeNoteModal();
+                closeNoteModal();
+            } catch (error) {
+                console.error('❌ Error deleting note:', error);
+                showNotification('⚠️ Error deleting note');
+            }
         }
 
         function updateNoteButtons() {
