@@ -39,3 +39,4 @@ coverage/
 .env.example
 .cache/
 .turbo/
+documents/SHAREPOINT_CONFIG_ERROR_FIXED.txt
