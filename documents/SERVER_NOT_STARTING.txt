@@ -1,0 +1,292 @@
+================================================================================
+             SERVER NOT RESPONDING - localhost:3000 AND /api/suppliers
+================================================================================
+
+PROBLEM:
+========
+
+localhost:3000 shows nothing
+https://supplier-portal.onrender.com/api/suppliers returns nothing
+
+Server is not responding at all.
+
+
+ROOT CAUSE:
+===========
+
+Dependencies are NOT installed!
+
+Node.js packages (express, cors, ws, body-parser) are missing.
+
+Without these, the server cannot start.
+
+
+VERIFICATION:
+=============
+
+Check if node_modules folder exists:
+
+  Windows:
+    dir node_modules
+    If error "File Not Found" = DEPENDENCIES NOT INSTALLED!
+  
+  Mac/Linux:
+    ls -la node_modules
+    If error "No such file" = DEPENDENCIES NOT INSTALLED!
+
+
+SOLUTION:
+=========
+
+You have TWO options:
+
+
+OPTION A: Install dependencies locally (recommended)
+==================================================
+
+You need Node.js and npm installed on your computer.
+
+If you have Node.js:
+
+  1. Open terminal/command prompt
+  2. Navigate to project:
+     cd "C:\Users\n0l08i7\Desktop\SUPPLIER HUB ONLINE\Supplier-Hub-Final"
+  3. Install dependencies:
+     npm install
+     (This creates node_modules/ folder with all packages)
+  4. Start server:
+     npm start
+  5. Open browser:
+     http://localhost:3000
+  6. Should see dashboard and supplier data!
+
+
+OPTION B: Render will install automatically
+=============================================
+
+When you push to Render:
+  1. Render sees package.json
+  2. Render runs: npm install
+  3. Render automatically installs all dependencies
+  4. Server starts and serves your app
+
+This is why Render deployment might work even if local doesn't.
+
+BUT: We still need to test locally to catch errors!
+
+
+IF YOU DON'T HAVE NODE.JS:
+===========================
+
+You need to install Node.js:
+
+For Walmart environment (using internal tools):
+  Use winget or Chocolatey to install Node.js
+  
+  Command:
+    winget install OpenJS.NodeJS
+    
+If that fails, download from:
+  https://nodejs.org/ (LTS version)
+  
+Or ask IT to provision Node.js
+
+
+WHAT npm install DOES:
+=======================
+
+package.json lists required dependencies:
+  - express (web server)
+  - cors (cross-origin requests)
+  - ws (websockets)
+  - body-parser (JSON parsing)
+
+npm install:
+  1. Reads package.json
+  2. Downloads each package from npm registry
+  3. Installs to node_modules/ folder
+  4. Creates package-lock.json (version tracking)
+  5. Takes 1-2 minutes
+  6. Result: Server can now run!
+
+
+AFTER npm install:
+===================
+
+You'll have:
+  node_modules/
+    ├── express/
+    ├── cors/
+    ├── ws/
+    ├── body-parser/
+    └── hundreds of dependency files
+  
+Then:
+  npm start
+  
+Will run:
+  node server.js
+  
+Which will:
+  1. Load dependencies
+  2. Generate supplier data
+  3. Start listening on port 3000
+  4. Serve dashboard at http://localhost:3000
+
+
+QUICK STEPS:
+=============
+
+1. Open command prompt/terminal
+
+2. Navigate to project:
+   cd "C:\Users\n0l08i7\Desktop\SUPPLIER HUB ONLINE\Supplier-Hub-Final"
+
+3. Install dependencies:
+   npm install
+   (Wait 1-2 minutes for completion)
+
+4. Start server:
+   npm start
+
+5. Open browser:
+   http://localhost:3000
+
+6. Check console:
+   Should see: "✅ Loaded X suppliers from server"
+   Supplier cards should appear!
+
+7. If it works:
+   CTRL+C to stop server
+   Push to GitHub:
+     git add -A
+     git commit -m "Ready: Dependencies installed, server working"
+     git push origin main
+   
+   Redeploy on Render:
+     Manual Deploy on Render dashboard
+
+
+IF npm install FAILS:
+======================
+
+Common errors:
+
+  "npm: command not found"
+    Problem: Node.js not in PATH
+    Solution: Reinstall Node.js or add to PATH
+  
+  "ERR! 404 Not Found"
+    Problem: Network/registry issue
+    Solution: Check internet, try again later
+  
+  "Permission denied"
+    Problem: Folder permissions
+    Solution: Run as administrator
+  
+  "ERESOLVE unable to resolve dependency"
+    Problem: Package version conflict
+    Solution: npm install --legacy-peer-deps
+
+
+WALMART NETWORK ISSUES:
+========================
+
+If npm install fails due to Walmart proxy:
+
+Add proxies inline:
+  HTTP_PROXY=http://sysproxy.wal-mart.com:8080 \
+  HTTPS_PROXY=http://sysproxy.wal-mart.com:8080 \
+  npm install
+
+Or configure permanently:
+  npm config set proxy http://sysproxy.wal-mart.com:8080
+  npm config set https-proxy http://sysproxy.wal-mart.com:8080
+
+
+VERIFY SERVER WORKS:
+====================
+
+After npm start:
+
+  1. Open browser: http://localhost:3000
+  2. Press F12 (Developer Tools)
+  3. Click "Console" tab
+  4. Refresh page
+  5. Look for messages:
+     ✅ "🚀 Loading suppliers from server..."
+     ✅ "✅ Loaded 150 suppliers from server"
+     ✅ Supplier cards appear
+  
+  If you see these: SERVER WORKS!
+  
+  Then:
+    1. Test /api/suppliers directly:
+       http://localhost:3000/api/suppliers
+       Should see JSON with supplier data
+    
+    2. Test /health endpoint:
+       http://localhost:3000/health
+       Should see: {"status":"ok",...}
+
+
+THEN DEPLOY TO RENDER:
+=======================
+
+1. Commit and push to GitHub:
+   git add -A
+   git commit -m "Fixed: Server running locally with dependencies"
+   git push origin main
+
+2. Trigger new Render build:
+   Go to https://render.com/dashboard
+   Click supplier-portal
+   Click "Manual Deploy"
+   Wait for build
+
+3. Verify on Render:
+   https://supplier-portal.onrender.com
+   Should see dashboard with supplier data!
+
+
+FINAL CHECKLIST:
+=================
+
+[ ] Node.js installed?
+    Command: node --version
+    Should show: v18.x.x or higher
+
+[ ] npm available?
+    Command: npm --version
+    Should show: 9.x.x or higher
+
+[ ] Dependencies installed?
+    Check: node_modules/ folder exists
+    Command: ls node_modules or dir node_modules
+
+[ ] Server starts?
+    Command: npm start
+    Should NOT show errors
+
+[ ] Dashboard loads?
+    URL: http://localhost:3000
+    Should see dashboard
+
+[ ] API works?
+    URL: http://localhost:3000/api/suppliers
+    Should see JSON data
+
+[ ] Data appears?
+    Dashboard should show supplier cards
+    Console should show success messages
+
+[ ] Ready to deploy?
+    Push to GitHub
+    Redeploy on Render
+    Check https://supplier-portal.onrender.com
+
+
+================================================================================
+The fix is simple: npm install
+That's it! Then everything will work!
+================================================================================
