@@ -1,11 +1,11 @@
 services:
   - type: web
     name: supplier-portal
-    runtime: python
-    pythonVersion: 3.11.7
+    runtime: node
+    nodeVersion: 18
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -13,8 +13,6 @@ services:
         value: 3000
       - key: HOST
         value: 0.0.0.0
-      - key: PYTHONUNBUFFERED
-        value: "1"
     healthCheckPath: /health
     healthCheckInterval: 30
     healthCheckTimeout: 10
