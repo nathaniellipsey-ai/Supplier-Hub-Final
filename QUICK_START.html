@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Start - Supplier Portal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0071ce 0%, #4dbdf5 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 113, 206, 0.3);
+        }
+        h1 {
+            color: #0071ce;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+        h2 {
+            color: #0071ce;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        p, li {
+            color: #333;
+            line-height: 1.8;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        ul { margin-left: 20px; }
+        .feature {
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #0071ce;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        a.btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #0071ce;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        a.btn:hover {
+            background: #004c91;
+        }
+        .info {
+            background: #e7f3ff;
+            border-left: 4px solid #0071ce;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            color: #003a80;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            color: #155724;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Supplier Portal! 🎉</h1>
+        
+        <div class="success">
+            <strong>Good News!</strong> This is a PUBLIC guest portal - you don't need to create an account. Just start using it!
+        </div>
+        
+        <h2>How to Access the Dashboard</h2>
+        <p>You have THREE ways to access the dashboard:</p>
+        
+        <div class="feature">
+            <strong>Option 1: Click Below</strong><br>
+            The easiest way - just click the button to go to the dashboard
+        </div>
+        
+        <div class="feature">
+            <strong>Option 2: Use Direct URL</strong><br>
+            Open your browser and go to:
+            <code>http://localhost:3000</code>
+        </div>
+        
+        <div class="feature">
+            <strong>Option 3: Use Render (Live on Internet)</strong><br>
+            Once deployed to Render, access from anywhere:
+            <code>https://supplier-portal-2kau.onrender.com</code>
+        </div>
+        
+        <div class="button-group">
+            <a href="/" class="btn">Open Dashboard Now</a>
+            <a href="dashboard_with_api.html" class="btn">Direct to Dashboard</a>
+        </div>
+        
+        <h2>What You'll See</h2>
+        <p>The dashboard automatically logs you in as a guest with full access to:</p>
+        <ul>
+            <li><strong>500+ Real Suppliers</strong> across all 50 US states</li>
+            <li><strong>Search & Filter</strong> suppliers by name, location, category</li>
+            <li><strong>Supplier Details</strong> including ratings, products, certifications</li>
+            <li><strong>Favorites System</strong> to bookmark suppliers you like</li>
+            <li><strong>Notes Editor</strong> to add personal notes for each supplier</li>
+            <li><strong>Compare Tool</strong> to compare multiple suppliers side-by-side</li>
+            <li><strong>Beautiful UI</strong> with Walmart branding and professional design</li>
+        </ul>
+        
+        <h2>No Login Required!</h2>
+        <div class="info">
+            <strong>Important:</strong> This portal does NOT have a traditional login screen.
+            <br><br>
+            Instead:
+            <ul style="margin-top: 10px;">
+                <li>✅ You are automatically logged in as a <strong>guest</strong></li>
+                <li>✅ Your favorites and notes are saved in your browser</li>
+                <li>✅ No username or password needed</li>
+                <li>✅ No account creation required</li>
+                <li>✅ Public access to all 500 suppliers</li>
+            </ul>
+        </div>
+        
+        <h2>Features You Can Use</h2>
+        
+        <div class="feature">
+            <strong>Search Suppliers</strong>
+            <p>Use the search bar at the top to find suppliers by name, location, or category.</p>
+            <p style="font-size: 12px; color: #666;">Example: "concrete", "California", "ABC Corp"</p>
+        </div>
+        
+        <div class="feature">
+            <strong>Filter Suppliers</strong>
+            <p>Use the left panel to filter by:</p>
+            <ul style="font-size: 14px;">
+                <li>State (all 50 US states)</li>
+                <li>Category (17 construction categories)</li>
+                <li>Region (Northeast, Southeast, Midwest, Southwest, West)</li>
+                <li>Rating (3.0 to 5.0 stars)</li>
+                <li>Company Size (Small, Medium, Large)</li>
+                <li>Price Range (Budget, Standard, Premium)</li>
+            </ul>
+        </div>
+        
+        <div class="feature">
+            <strong>View Supplier Details</strong>
+            <p>Click any supplier card to see:</p>
+            <ul style="font-size: 14px;">
+                <li>Company name & address</li>
+                <li>Phone number</li>
+                <li>Customer ratings and reviews</li>
+                <li>Products and services</li>
+                <li>Certifications</li>
+                <li>Lead times and response times</li>
+                <li>Stock levels</li>
+                <li>Minimum order quantities</li>
+            </ul>
+        </div>
+        
+        <div class="feature">
+            <strong>Add to Favorites</strong>
+            <p>Click the heart icon on any supplier card to add it to your favorites. These are saved in your browser!</p>
+        </div>
+        
+        <div class="feature">
+            <strong>Add Notes</strong>
+            <p>Click the notes icon to add personal notes about a supplier. Great for recording contact information, pricing discussions, or other details.</p>
+        </div>
+        
+        <h2>Deployment Info</h2>
+        <p>This dashboard is ready to deploy to Render:</p>
+        <ol>
+            <li>Push to GitHub: <code>git push origin main</code></li>
+            <li>Go to Render dashboard</li>
+            <li>Click "Manual Deploy"</li>
+            <li>Wait 3-5 minutes for deployment</li>
+            <li>Access at: <code>https://supplier-portal-2kau.onrender.com</code></li>
+        </ol>
+        
+        <div class="success">
+            <strong>Data:</strong> All 500 suppliers are stored in <code>suppliers.json</code> which is included in the deployment.
+        </div>
+        
+        <h2>Troubleshooting</h2>
+        
+        <div class="feature">
+            <strong>Dashboard won't load?</strong>
+            <ul style="font-size: 14px; margin-top: 10px;">
+                <li>Make sure Flask server is running: <code>python app.py</code></li>
+                <li>Check that port 3000 is available</li>
+                <li>Refresh your browser (Ctrl+F5)</li>
+                <li>Check browser console for errors (F12)</li>
+            </ul>
+        </div>
+        
+        <div class="feature">
+            <strong>Can't find suppliers?</strong>
+            <ul style="font-size: 14px; margin-top: 10px;">
+                <li>Make sure <code>suppliers.json</code> exists in the project folder</li>
+                <li>Try clearing your browser cache</li>
+                <li>Reload the page completely (Ctrl+F5)</li>
+            </ul>
+        </div>
+        
+        <div class="feature">
+            <strong>Favorites not saving?</strong>
+            <ul style="font-size: 14px; margin-top: 10px;">
+                <li>Check that localStorage is enabled in your browser</li>
+                <li>Try opening in a different browser</li>
+                <li>Make sure you're not in private/incognito mode (data won't persist)</li>
+            </ul>
+        </div>
+        
+        <div class="button-group" style="margin-top: 40px;">
+            <a href="/" class="btn">Go to Dashboard</a>
+        </div>
+        
+        <hr style="margin: 40px 0; border: none; border-top: 1px solid #ddd;">
+        
+        <p style="font-size: 12px; color: #999; text-align: center;">
+            Supplier Portal v1.0 • Built with Flask + JavaScript<br>
+            500 Real Suppliers • All 50 US States • 17 Product Categories
+        </p>
+    </div>
+</body>
+</html>

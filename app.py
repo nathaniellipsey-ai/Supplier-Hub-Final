@@ -115,12 +115,209 @@ print(f"[OK] Source: {'suppliers.json' if len(ALL_SUPPLIERS) > 150 else 'Fallbac
 print("[3/3] Starting API server...")
 print()
 
+# ==================== USERS DATABASE ====================
+
+USERS_DB = {}
+
+def generate_session_id():
+    """Generate a unique session ID"""
+    import uuid
+    return str(uuid.uuid4())
+
+def get_user_by_email(email):
+    """Get user from database by email"""
+    for user_id, user_data in USERS_DB.items():
+        if user_data.get('email') == email:
+            return user_id, user_data
+    return None, None
+
 # ==================== API ENDPOINTS ====================
 
 @app.route('/')
-def serve_dashboard():
+def serve_home():
+    """Serve the login page by default"""
+    return send_from_directory('.', 'login.html')
+
+@app.route('/login')
+def serve_login():
+    """Serve the login page"""
+    return send_from_directory('.', 'login.html')
+
+@app.route('/login.html')
+def serve_login_html():
+    """Serve the login.html file"""
+    return send_from_directory('.', 'login.html')
+
+@app.route('/dashboard_with_api.html')
+def serve_dashboard_html():
     """Serve the dashboard HTML"""
     return send_from_directory('.', 'dashboard_with_api.html')
+
+# ==================== AUTHENTICATION ENDPOINTS ====================
+
+@app.route('/api/auth/login', methods=['POST'])
+def auth_login():
+    """
+    Login or create account
+    Request body: {"email": "...", "name": "...", "walmart_id": "..."}
+    """
+    try:
+        data = request.get_json() or {}
+        email = data.get('email', '').strip()
+        name = data.get('name', '').strip()
+        walmart_id = data.get('walmart_id', '').strip()
+        
+        if not email or not name:
+            return jsonify({
+                'success': False,
+                'detail': 'Email and name are required'
+            }), 400
+        
+        # Check if user exists
+        user_id, existing_user = get_user_by_email(email)
+        
+        if user_id:
+            # User already exists, just login
+            session_id = generate_session_id()
+            existing_user['last_login'] = datetime.utcnow().isoformat()
+            
+            print(f"[AUTH] User logged in: {email}")
+            
+            return jsonify({
+                'success': True,
+                'session_id': session_id,
+                'user_id': user_id,
+                'email': email,
+                'name': name,
+                'walmart_id': walmart_id,
+                'message': 'Login successful'
+            }), 200
+        else:
+            # Create new user account
+            import uuid
+            new_user_id = str(uuid.uuid4())
+            
+            USERS_DB[new_user_id] = {
+                'id': new_user_id,
+                'email': email,
+                'name': name,
+                'walmart_id': walmart_id,
+                'created_at': datetime.utcnow().isoformat(),
+                'last_login': datetime.utcnow().isoformat(),
+                'favorites': [],
+                'notes': {}
+            }
+            
+            session_id = generate_session_id()
+            
+            print(f"[AUTH] New user created and logged in: {email}")
+            
+            return jsonify({
+                'success': True,
+                'session_id': session_id,
+                'user_id': new_user_id,
+                'email': email,
+                'name': name,
+                'walmart_id': walmart_id,
+                'message': 'Account created and login successful'
+            }), 201
+    
+    except Exception as e:
+        print(f"[ERROR] Auth login failed: {e}")
+        return jsonify({
+            'success': False,
+            'detail': str(e)
+        }), 500
+
+@app.route('/api/auth/logout', methods=['POST'])
+def auth_logout():
+    """
+    Logout endpoint
+    """
+    try:
+        data = request.get_json() or {}
+        user_id = data.get('user_id')
+        
+        if user_id and user_id in USERS_DB:
+            print(f"[AUTH] User logged out: {USERS_DB[user_id]['email']}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Logged out successfully'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'detail': str(e)
+        }), 500
+
+@app.route('/api/auth/verify', methods=['GET'])
+def auth_verify():
+    """
+    Verify if user is authenticated
+    Query params: session_id, user_id
+    """
+    try:
+        session_id = request.args.get('session_id')
+        user_id = request.args.get('user_id')
+        
+        if not user_id or user_id not in USERS_DB:
+            return jsonify({
+                'success': False,
+                'authenticated': False
+            }), 401
+        
+        user = USERS_DB[user_id]
+        return jsonify({
+            'success': True,
+            'authenticated': True,
+            'user_id': user_id,
+            'email': user.get('email'),
+            'name': user.get('name'),
+            'walmart_id': user.get('walmart_id')
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'detail': str(e)
+        }), 500
+
+@app.route('/api/auth/user', methods=['GET'])
+def auth_get_user():
+    """
+    Get current user info
+    Query params: user_id
+    """
+    try:
+        user_id = request.args.get('user_id')
+        
+        if not user_id or user_id not in USERS_DB:
+            return jsonify({
+                'success': False,
+                'detail': 'User not found'
+            }), 404
+        
+        user = USERS_DB[user_id]
+        return jsonify({
+            'success': True,
+            'user': {
+                'id': user.get('id'),
+                'email': user.get('email'),
+                'name': user.get('name'),
+                'walmart_id': user.get('walmart_id'),
+                'created_at': user.get('created_at'),
+                'last_login': user.get('last_login'),
+                'favorites': user.get('favorites', []),
+                'notes': user.get('notes', {})
+            }
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'detail': str(e)
+        }), 500
+
+# ==================== SUPPLIER ENDPOINTS ====================
 
 @app.route('/api/suppliers', methods=['GET'])
 def get_suppliers():

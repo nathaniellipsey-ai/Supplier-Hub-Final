@@ -2452,6 +2452,12 @@ let productCategories = {};
                 console.log('No suppliers yet, retrying initialization...');
                 initializeFromServer();
             }
+            // Ensure user is logged in as guest
+            const currentUser = localStorage.getItem('currentUser');
+            if (!currentUser) {
+                localStorage.setItem('currentUser', 'guest@supplier-portal.local');
+                console.log('[AUTO-LOGIN] Logged in as guest');
+            }
         });
         // NOTE: currentPage and itemsPerPage already declared at line 1643
         // Do NOT redeclare - just use the existing variables
@@ -3599,7 +3605,8 @@ let productCategories = {};
 
         function logout() {
             localStorage.removeItem('currentUser');
-            window.location.href = 'login.html';
+            // In guest mode, just reload dashboard
+            window.location.href = 'dashboard_with_api.html';
         }
 
         async function toggleFavorite(supplierId) {
