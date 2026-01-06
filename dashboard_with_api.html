@@ -2972,6 +2972,10 @@ let productCategories = {};
             document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                 cb.addEventListener('change', applyFilters);
             });
+            } catch (error) {
+                console.error('❌ Error in initializeFilters:', error);
+                // Continue without filters - they're not critical
+            }
         }
 
         // Apply filters
@@ -3005,10 +3009,6 @@ let productCategories = {};
 
             currentPage = 1;
             renderResults();
-            } catch (error) {
-                console.error('❌ Error in initializeFilters:', error);
-                // Continue without filters - they're not critical
-            }
         }
 
         // Render catalog card
