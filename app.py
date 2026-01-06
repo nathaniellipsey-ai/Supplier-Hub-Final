@@ -8,6 +8,7 @@ import os
 import sys
 import json
 from datetime import datetime
+import random
 
 try:
     from flask import Flask, jsonify, request, send_from_directory
@@ -52,10 +53,11 @@ def load_suppliers_from_file(filename='suppliers.json'):
         if os.path.exists(filename):
             with open(filename, 'r') as f:
                 data = json.load(f)
-                print(f"[OK] Loaded {len(data)} suppliers from {filename}")
+                print(f"[OK] Loaded {len(data)} REAL suppliers from {filename}")
                 return data
         else:
             print(f"[WARNING] {filename} not found")
+            print("         No real supplier data available!")
             print("         Run: python scraper.py to generate supplier data")
             return []
     except Exception as e:
@@ -100,27 +102,34 @@ def enrich_supplier_data(suppliers):
         'Washington': 'West', 'Wyoming': 'West'
     }
     
-    import random
-    
     for i, supplier in enumerate(suppliers, 1):
         supplier['id'] = i
-        supplier['category'] = random.choice(categories)
+        
+        # Use category from scraped data if available, otherwise assign
+        if 'category' not in supplier or not supplier['category']:
+            supplier['category'] = random.choice(categories)
+        
+        # Map state to region
         supplier['region'] = state_to_region.get(supplier.get('state', 'California'), 'West')
-        supplier['rating'] = round(supplier.get('rating', 4.0), 1)
-        supplier['reviews'] = supplier.get('reviews', 0)
-        supplier['products'] = ['Construction Materials', 'Supplies', 'Equipment']
-        supplier['certifications'] = ['ISO 9001'] if random.random() > 0.7 else []
-        supplier['leadTime'] = '2-4 weeks'
-        supplier['responseTime'] = '24 hours'
-        supplier['stockLevel'] = random.randint(100, 5000)
-        supplier['inStock'] = True
-        supplier['minimumOrder'] = 100
-        supplier['walmartVerified'] = random.random() > 0.8
-        supplier['size'] = random.choice(['Small (1-50)', 'Medium (51-500)', 'Large (500+)'])
-        supplier['priceRange'] = random.choice(['Budget ($)', 'Standard ($$)', 'Premium ($$$)'])
-        supplier['aiScore'] = random.randint(60, 95)
-        supplier['lastUpdated'] = datetime.utcnow().isoformat()
-        supplier['lastStockCheck'] = datetime.utcnow().isoformat()
+        supplier['rating'] = round(float(supplier.get('rating', 4.0)), 1)
+        supplier['reviews'] = int(supplier.get('reviews', 0))
+        
+        # Add default products if not present
+        if 'products' not in supplier or not supplier['products']:
+            supplier['products'] = ['Construction Materials', 'Supplies', 'Equipment']
+        
+        supplier['certifications'] = supplier.get('certifications', ['ISO 9001'] if random.random() > 0.7 else [])
+        supplier['leadTime'] = supplier.get('leadTime', '2-4 weeks')
+        supplier['responseTime'] = supplier.get('responseTime', '24 hours')
+        supplier['stockLevel'] = int(supplier.get('stockLevel', random.randint(100, 5000)))
+        supplier['inStock'] = supplier.get('inStock', True)
+        supplier['minimumOrder'] = int(supplier.get('minimumOrder', 100))
+        supplier['walmartVerified'] = supplier.get('walmartVerified', random.random() > 0.8)
+        supplier['size'] = supplier.get('size', random.choice(['Small (1-50)', 'Medium (51-500)', 'Large (500+)']))
+        supplier['priceRange'] = supplier.get('priceRange', random.choice(['Budget ($)', 'Standard ($$)', 'Premium ($$$)']))
+        supplier['aiScore'] = int(supplier.get('aiScore', random.randint(60, 95)))
+        supplier['lastUpdated'] = supplier.get('lastUpdated', datetime.utcnow().isoformat())
+        supplier['lastStockCheck'] = supplier.get('lastStockCheck', datetime.utcnow().isoformat())
         supplier['source'] = supplier.get('source', 'Web Scrape')
     
     return suppliers
@@ -134,10 +143,11 @@ if ALL_SUPPLIERS:
     ALL_SUPPLIERS = enrich_supplier_data(ALL_SUPPLIERS)
     print(f"[OK] Enriched {len(ALL_SUPPLIERS)} suppliers with additional data")
 else:
-    print("[WARNING] No supplier data loaded!")
-    print("\nTo get real supplier data, run:")
+    print("[WARNING] No real supplier data loaded!")
+    print("\nTo get REAL supplier data, run:")
     print("  python scraper.py")
-    print("\nThis will scrape real construction suppliers from Yellow Pages and Bing")
+    print("\nThis will scrape real construction suppliers from Yellow Pages")
+    print("and save to suppliers.json\n")
 
 print("[3/3] Starting API server...")
 print()
@@ -160,8 +170,9 @@ def get_suppliers():
             return jsonify({
                 'success': False,
                 'error': 'No supplier data loaded. Run: python scraper.py',
-                'data': []
-            }), 503
+                'data': [],
+                'total': 0
+            }), 200  # Return 200 so frontend doesn't error out
         
         page = request.args.get('page', 1, type=int)
         limit = request.args.get('limit', 1000, type=int)
@@ -177,12 +188,15 @@ def get_suppliers():
             'total': len(ALL_SUPPLIERS),
             'page': page,
             'limit': limit,
-            'source': 'web_scrape'
+            'source': 'web_scrape',
+            'loaded': len(ALL_SUPPLIERS) > 0
         })
     except Exception as e:
+        print(f"ERROR in /api/suppliers: {e}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': str(e),
+            'data': []
         }), 500
 
 @app.route('/api/suppliers/<int:supplier_id>', methods=['GET'])
@@ -216,7 +230,7 @@ def search_suppliers():
         if not query:
             return jsonify({
                 'success': True,
-                'results': ALL_SUPPLIERS[:50]
+                'results': ALL_SUPPLIERS[:50] if ALL_SUPPLIERS else []
             })
         
         results = [s for s in ALL_SUPPLIERS if 
@@ -271,10 +285,11 @@ def filter_suppliers():
 def health_check():
     """Health check endpoint"""
     return jsonify({
-        'status': 'healthy' if ALL_SUPPLIERS else 'incomplete',
+        'status': 'healthy' if ALL_SUPPLIERS else 'no_data',
         'suppliers_loaded': len(ALL_SUPPLIERS),
         'timestamp': datetime.utcnow().isoformat(),
-        'source': 'web_scrape'
+        'source': 'web_scrape',
+        'message': 'Run scraper.py to load real supplier data' if not ALL_SUPPLIERS else 'Real suppliers loaded from web scraping'
     })
 
 # ==================== ERROR HANDLERS ====================
@@ -302,11 +317,18 @@ if __name__ == '__main__':
     print(f"\nServer starting on {HOST}:{PORT}...\n")
     
     if not ALL_SUPPLIERS:
-        print("\nWARNING: No supplier data loaded!")
-        print("\nTo populate with real supplier data:")
-        print("  1. Run: python scraper.py")
-        print("  2. This will scrape real construction suppliers")
-        print("  3. Data will be saved to suppliers.json")
-        print("  4. Dashboard will load suppliers on next request\n")
+        print("====================================================================")
+        print("WARNING: No REAL supplier data loaded!")
+        print("====================================================================")
+        print("\nTo populate with REAL construction suppliers from USA:")
+        print("\n  Step 1: Install scraper dependencies")
+        print("    pip install beautifulsoup4 requests pandas lxml")
+        print("\n  Step 2: Run the web scraper")
+        print("    python scraper.py")
+        print("\n  Step 3: Restart this server")
+        print("    python app.py")
+        print("\nThe scraper will pull REAL suppliers from Yellow Pages!")
+        print("====================================================================")
+        print()
     
     app.run(host=HOST, port=PORT, debug=(NODE_ENV == 'development'))
