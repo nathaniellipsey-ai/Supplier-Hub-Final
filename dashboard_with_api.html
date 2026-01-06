@@ -2319,32 +2319,83 @@ function updateStats() {
         async function initializeFromServer() {
             console.log('🚀 Loading suppliers from server...');
             try {
+                console.log('Fetching from:', window.location.origin + '/api/suppliers');
                 const response = await fetch(window.location.origin + '/api/suppliers');
+                console.log('Response status:', response.status);
                 if (!response.ok) throw new Error('Server error: ' + response.status);
                 const data = await response.json();
+                console.log('Response data:', data);
                 allSuppliers = data.data || [];
                 filteredSuppliers = [...allSuppliers];
                 console.log('✅ Loaded', allSuppliers.length, 'suppliers from server');
-                initializeFilters();
-                updateStats();
-                renderResults();
-                renderPagination();
+                
+                // Call rendering functions with error handling
+                try {
+                    console.log('Initializing filters...');
+                    if (typeof initializeFilters === 'function') {
+                        initializeFilters();
+                        console.log('✅ Filters initialized');
+                    }
+                } catch (e) {
+                    console.error('❌ Error in initializeFilters:', e);
+                }
+                
+                try {
+                    console.log('Updating stats...');
+                    if (typeof updateStats === 'function') {
+                        updateStats();
+                        console.log('✅ Stats updated');
+                    }
+                } catch (e) {
+                    console.error('❌ Error in updateStats:', e);
+                }
+                
+                try {
+                    console.log('Rendering results...');
+                    if (typeof renderResults === 'function') {
+                        renderResults();
+                        console.log('✅ Results rendered');
+                    }
+                } catch (e) {
+                    console.error('❌ Error in renderResults:', e);
+                }
+                
+                try {
+                    console.log('Rendering pagination...');
+                    if (typeof renderPagination === 'function') {
+                        renderPagination();
+                        console.log('✅ Pagination rendered');
+                    }
+                } catch (e) {
+                    console.error('❌ Error in renderPagination:', e);
+                }
+                
+                console.log('✅ Dashboard initialization complete!');
             } catch (error) {
                 console.error('❌ Failed to load suppliers:', error);
+                console.error('Stack trace:', error.stack);
                 alert('❌ Failed to load from server:\n' + error.message);
             }
         }
         
         // Call on DOMContentLoaded
+        console.log('Page ready state:', document.readyState);
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeFromServer);
+            console.log('Waiting for DOMContentLoaded...');
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOMContentLoaded fired');
+                initializeFromServer();
+            });
         } else {
+            console.log('DOM already loaded, initializing now...');
             initializeFromServer();
         }
         
         // Also call on window load to be extra sure
         window.addEventListener('load', function() {
+            console.log('Window load event fired, suppliers loaded:', allSuppliers.length);
             if (allSuppliers.length === 0) {
+                console.log('No suppliers yet, retrying initialization...');
                 initializeFromServer();
             }
         });
